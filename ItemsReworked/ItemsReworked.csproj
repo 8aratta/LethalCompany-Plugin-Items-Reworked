@@ -70,7 +70,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ItemsReworkedPlugin.cs" />
-    <Compile Include="Patches\Mug.cs" />
+    <Compile Include="Patches\BaseItem.cs" />
+    <Compile Include="Patches\Flask.cs" />
     <Compile Include="Patches\PillBottle.cs" />
     <Compile Include="Patches\PlayerControllerB.cs" />
     <Compile Include="Patches\RemoteProp.cs" />

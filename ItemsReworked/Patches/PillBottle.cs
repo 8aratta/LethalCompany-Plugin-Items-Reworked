@@ -1,24 +1,31 @@
-﻿namespace ItemsReworked.Patches
-{
-    internal class PillBottlePatches
-    {
-        bool itemUsedUp = false;
+﻿using GameNetcodeStuff;
 
-        public void ItemActivate(int scrapValue)
+namespace ItemsReworked.Patches
+{
+    internal class PillBottle : BaseItem
+    {
+        public PillBottle()
         {
-            if (!itemUsedUp)
+            ItemName = "PillBottle";
+        }
+
+        public override void UseItem(PlayerControllerB player, GrabbableObject item)
+        {
+            ItemsReworkedPlugin.mls.LogWarning($"{ItemName} detected");
+
+            if (!item.itemUsedUp)
             {
-                ItemsReworkedPlugin.mls.LogInfo($"Scrap Value: {scrapValue}");
-                HealPlayer(scrapValue);
-                scrapValue = 1;
-                itemUsedUp = true;
+                ItemsReworkedPlugin.mls.LogInfo($"Scrap Value: {item.scrapValue}");
+                HealPlayer(player, item.scrapValue);
+                item.SetScrapValue(1);
+                item.itemUsedUp = true;
             }
         }
 
-        private static void HealPlayer(int hp)
+        private void HealPlayer(PlayerControllerB player, int hp)
         {
-            ItemsReworkedPlugin.mls.LogInfo("Entering healing of player");
-            StartOfRound.Instance.localPlayerController.health += hp;
+            player.health += hp;
+            HUDManager.Instance.UpdateHealthUI(player.health);
         }
     }
 }

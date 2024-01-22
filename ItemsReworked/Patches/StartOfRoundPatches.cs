@@ -19,8 +19,6 @@ namespace ItemsReworked.Patches
                     ItemsReworkedPlugin.mls.LogInfo($"name = '{item.name}");
                 }
             }
-
         }
-
     }
 }
