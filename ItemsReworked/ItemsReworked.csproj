@@ -69,12 +69,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Handlers\ScrapHandler.cs" />
     <Compile Include="ItemsReworkedPlugin.cs" />
-    <Compile Include="Patches\BaseItem.cs" />
-    <Compile Include="Patches\Flask.cs" />
-    <Compile Include="Patches\PillBottle.cs" />
+    <Compile Include="Scrap\BaseItem.cs" />
+    <Compile Include="Scrap\MagnifyingGlass.cs" />
+    <Compile Include="Scrap\RubberDuck.cs" />
+    <Compile Include="Scrap\SodaCanRed.cs" />
+    <Compile Include="Scrap\PerfumeBottle.cs" />
+    <Compile Include="Scrap\Phone.cs" />
+    <Compile Include="Scrap\PickleJar.cs" />
+    <Compile Include="Scrap\Hairdryer.cs" />
+    <Compile Include="Scrap\SevenBall.cs" />
+    <Compile Include="Scrap\Bell.cs" />
+    <Compile Include="Scrap\BigBolt.cs" />
+    <Compile Include="Scrap\Candy.cs" />
+    <Compile Include="Scrap\CashRegister.cs" />
+    <Compile Include="Scrap\Dentures.cs" />
+    <Compile Include="Scrap\FancyPainting.cs" />
+    <Compile Include="Scrap\Flask.cs" />
+    <Compile Include="Scrap\Mug.cs" />
+    <Compile Include="Scrap\PillBottle.cs" />
     <Compile Include="Patches\PlayerControllerB.cs" />
-    <Compile Include="Patches\RemoteProp.cs" />
+    <Compile Include="Scrap\RemoteProp.cs" />
     <Compile Include="Patches\StartOfRoundPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

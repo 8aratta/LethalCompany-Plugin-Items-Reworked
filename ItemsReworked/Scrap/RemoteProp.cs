@@ -3,7 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 #endregion
 
-namespace ItemsReworked.Patches
+namespace ItemsReworked.Scrap
 {
     [HarmonyPatch(typeof(RemoteProp))]
     internal class RemotePropPatches

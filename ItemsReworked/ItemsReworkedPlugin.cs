@@ -3,7 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using System.Collections.Generic;
+using ItemsReworked.Handlers;
 #endregion
 
 namespace ItemsReworked
@@ -16,7 +16,7 @@ namespace ItemsReworked
         internal static ItemsReworkedPlugin Instance { get; private set; }
         internal static ManualLogSource mls;
 
-        internal List<GrabbableObject> ItemList = new List<GrabbableObject>();
+        internal ScrapHandler scrapHandler = new ScrapHandler();
 
         #region Config
         /// <summary>

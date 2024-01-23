@@ -12,55 +12,38 @@ namespace ItemsReworked.Patches
 
         [HarmonyPatch("GrabObjectServerRpc")]
         [HarmonyPostfix]
-        private static void GrabObject(NetworkObjectReference grabbedObject)
+        private static void PickUpScrapItem(NetworkObjectReference grabbedObject)
         {
             grabbedObject.TryGet(out var networkObject);
-            var Item = networkObject.gameObject.GetComponentInChildren<GrabbableObject>();
-            if (!pluginInstance.ItemList.Contains(Item))
-                pluginInstance.ItemList.Add(Item);
-            ItemsReworkedPlugin.mls.LogWarning($"Item: {Item.name} Id: {Item.GetInstanceID()} added to item list");
+            var scrapItem = networkObject.gameObject.GetComponentInChildren<GrabbableObject>();
 
-            foreach (var entry in pluginInstance.ItemList)
-            {
-                ItemsReworkedPlugin.mls.LogWarning($"Entry: Item: {Item.name} Id: {Item.GetInstanceID()}");
-            }
+            // Register the scrap item in the ScrapHandler
+            pluginInstance.scrapHandler.RegisterScrapItem(scrapItem);
 
+            ItemsReworkedPlugin.mls.LogInfo($"{scrapItem.name} picked up.");
         }
 
         [HarmonyPatch("ActivateItem_performed")]
         [HarmonyPrefix]
         private static void UseScrapItem(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
-            ItemsReworkedPlugin.mls.LogWarning("Activate Performed");
             if (___currentlyHeldObjectServer != null)
             {
-                ItemsReworkedPlugin.mls.LogWarning($"Holding item: {___currentlyHeldObjectServer.name}");
+                // Use the scrap item through the ScrapHandler
+                pluginInstance.scrapHandler.UseScrapItem(___currentlyHeldObjectServer, __instance);
 
-                switch (___currentlyHeldObjectServer.name.Replace("(Clone)", null))
-                {
-                    default:
-                        break;
-                    case "PillBottle":
-                        BaseItem pillBottle = new PillBottle();
-                        pillBottle.UseItem(__instance, ___currentlyHeldObjectServer);
-                        break;
-                    case "Flask":
-                        BaseItem flask = new Flask();
-                        flask.UseItem(__instance, ___currentlyHeldObjectServer);
-                        break;
-                    case "Mug":
-                        break;
-
-                }
+                ItemsReworkedPlugin.mls.LogInfo($"{___currentlyHeldObjectServer.name} used.");
             }
-
         }
 
-        //My Methods
-        private static void HealPlayer(PlayerControllerB player, int hp)
-        {
-            player.health += hp;
-            HUDManager.Instance.UpdateHealthUI(player.health);
-        }
+        //[HarmonyPatch("ItemSold")]
+        //[HarmonyPrefix]
+        //private static void SellScrapItem(GrabbableObject scrapItemSold)
+        //{
+        //    // Remove the scrap item from the ScrapHandler when sold
+        //    pluginInstance.scrapHandler.RemoveScrapItem(scrapItemSold);
+
+        //    ItemsReworkedPlugin.mls.LogInfo($"{scrapItemSold.name} sold.");
+        //}
     }
 }

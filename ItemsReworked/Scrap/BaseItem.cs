@@ -1,11 +1,9 @@
 ﻿using GameNetcodeStuff;
 
-namespace ItemsReworked.Patches
+namespace ItemsReworked.Scrap
 {
     public abstract class BaseItem
     {
-        public string ItemName { get; protected set; }
-
         public abstract void UseItem(PlayerControllerB player, GrabbableObject item);
     }
 }
