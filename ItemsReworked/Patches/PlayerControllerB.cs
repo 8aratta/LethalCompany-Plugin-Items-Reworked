@@ -1,7 +1,9 @@
-﻿using GameNetcodeStuff;
+﻿#region usings
+using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
+#endregion
 
 namespace ItemsReworked.Patches
 {
@@ -31,8 +33,17 @@ namespace ItemsReworked.Patches
             {
                 // Use the scrap item through the ScrapHandler
                 pluginInstance.scrapHandler.UseScrapItem(___currentlyHeldObjectServer, __instance);
+            }
+        }
 
-                ItemsReworkedPlugin.mls.LogInfo($"{___currentlyHeldObjectServer.name} used.");
+        [HarmonyPatch("InspectItem_performed")]
+        [HarmonyPrefix]
+        private static void InspectItem_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
+        {
+            if (___currentlyHeldObjectServer != null)
+            {
+                // Use the scrap item through the ScrapHandler
+                pluginInstance.scrapHandler.InspectScrapItem(___currentlyHeldObjectServer, __instance);
             }
         }
 

@@ -38,7 +38,6 @@ namespace ItemsReworked
 
             harmony.PatchAll();
 
-
             mls.LogInfo("Items Reworked Plugin loaded sucessfully.");
         }
     }
