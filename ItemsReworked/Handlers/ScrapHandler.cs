@@ -74,6 +74,8 @@ namespace ItemsReworked.Handlers
                     return new PillBottle(scrapItem);
                 case "RedSodaCan":
                     return new RedSodaCan();
+                case "Remote":
+                    return new Remote(scrapItem);
                 default:
                     ItemsReworkedPlugin.mls.LogInfo($"Unsupported scrap item type {scrapItem.name} picked up");
                     return null;
