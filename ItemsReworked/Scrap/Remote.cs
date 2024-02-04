@@ -1,5 +1,6 @@
 ﻿#region usings
 using GameNetcodeStuff;
+using ItemsReworked.Handlers;
 using UnityEngine;
 #endregion
 
@@ -19,9 +20,12 @@ namespace ItemsReworked.Scrap
             if (uses > 0)
             {
                 uses--;
-                ItemsReworkedPlugin.mls.LogInfo($"Remaining uses: {uses}.");
-                TriggerLandMines();
-                RemoteMalfunction(player, item);
+                ActivateRemote();
+
+                player.StartCoroutine(DelayedActivation(player, item, 1.5f, () =>
+                {
+                    RemoteMalfunction(player, item);
+                }));
             }
         }
         public override void InspectItem(PlayerControllerB player, GrabbableObject item)
@@ -54,17 +58,15 @@ namespace ItemsReworked.Scrap
             }
         }
 
-        private static bool TriggerLandMines()
+        private static bool ActivateRemote()
         {
             var localPlayer = StartOfRound.Instance.localPlayerController;
             var playersFace = localPlayer.gameplayCamera.transform.position;
             var facingDirection = localPlayer.gameplayCamera.transform.forward;
 
-            // Maximum distance for the infection spreadDistance
-            float spreadDistance = 15f;
+            float remoteRange = 20f;
 
-            // Casting a ray in looking direction
-            var ray = Physics.RaycastAll(playersFace, facingDirection, spreadDistance);
+            var ray = Physics.RaycastAll(playersFace, facingDirection, remoteRange);
 
             foreach (var hit in ray)
             {
@@ -73,8 +75,8 @@ namespace ItemsReworked.Scrap
                 //Avoid detecting self
                 if (turret != null)
                 {
-                    ItemsReworkedPlugin.mls.LogInfo("HIT TURRET");
-                    turret.enabled = false;
+                    ItemsReworkedPlugin.mls.LogInfo("Toggling Turret");
+                    turret.ToggleTurretEnabled(!turret.enabled);
                     return true;
                 }
                 if (Landmine != null)
@@ -93,22 +95,33 @@ namespace ItemsReworked.Scrap
             int randomNumber = random.Next(0, 101);
 
             //10% Chance to be electrocuted to death //CONFIG
-            if (randomNumber <= 10)
+            if (randomNumber <= 5)
             {
                 uses = 0;
                 Landmine.SpawnExplosion(remote.transform.position, true);
-                Vector3 bodyVelocity = (player.gameplayCamera.transform.position + remote.transform.position) / 2f;
-                remote.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
-                remote.DestroyObjectInHand(remote.playerHeldBy);
-                ItemsReworkedPlugin.mls.LogInfo($"Remote exploded in the hand of the player '{player.name}'");
+
+                if (remote.heldByPlayerOnServer)
+                {
+                    Vector3 bodyVelocity = (player.gameplayCamera.transform.position + remote.transform.position) / 2f;
+                    remote.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
+                    remote.DestroyObjectInHand(remote.playerHeldBy);
+                    ItemsReworkedPlugin.Instance.scrapHandler.RemoveScrapItem(remote);
+                    ItemsReworkedPlugin.mls.LogInfo($"Remote exploded in the hand of the player '{player.name}'");
+                }
+
                 remote.SetScrapValue(1);
             }
             //15% Chance for remote to fry itself
             else if (randomNumber <= 15)
             {
-                remote.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
+                if (remote.heldByPlayerOnServer)
+                {
+                    AudioHandler.PlaySound(player, "Scrap\\Remote\\Zap.mp3");
+                    remote.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
+                    ItemsReworkedPlugin.mls.LogInfo($"Remote zapped player '{player.name}'");
+                }
+
                 uses = 0;
-                ItemsReworkedPlugin.mls.LogInfo($"Remote zapped player '{player.name}'");
                 remote.SetScrapValue(1);
             }
         }

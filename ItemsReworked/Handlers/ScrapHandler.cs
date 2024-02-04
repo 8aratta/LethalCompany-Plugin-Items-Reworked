@@ -69,11 +69,11 @@ namespace ItemsReworked.Handlers
                 case "Flask":
                     return new Flask();
                 case "Mug":
-                    return new Mug();
+                    return new Mug(scrapItem);
                 case "PillBottle":
                     return new PillBottle(scrapItem);
                 case "RedSodaCan":
-                    return new RedSodaCan();
+                    return new RedSodaCan(scrapItem);
                 case "Remote":
                     return new Remote(scrapItem);
                 default:

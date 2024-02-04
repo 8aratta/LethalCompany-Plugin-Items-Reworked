@@ -1,5 +1,6 @@
 ﻿#region usings
 using GameNetcodeStuff;
+using ItemsReworked.Handlers;
 using System.Collections;
 using UnityEngine;
 #endregion
@@ -31,15 +32,22 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem(PlayerControllerB player, GrabbableObject item)
         {
-            if (!item.itemUsedUp)
+            if (!item.itemUsedUp && !inSpecialScenario && player.health != 100 && !player.inTerminalMenu)
             {
-                remainingPills = IngestPills(player, remainingPills);
-                item.SetScrapValue(remainingPills);
-                if (remainingPills == 0)
+                inSpecialScenario = true;
+                var soundName = "PillPop" + pillQuality + ".mp3";
+                AudioHandler.PlaySound(player, "Scrap\\PillBottle\\" + soundName);
+                ItemsReworkedPlugin.mls.LogInfo($"playing: {soundName}");
+                player.StartCoroutine(DelayedActivation(player, item, 2f, () =>
                 {
-                    item.SetScrapValue(1);
-                    item.itemUsedUp = true;
-                }
+                    remainingPills = IngestPills(player, remainingPills);
+                    item.SetScrapValue(remainingPills);
+                    if (remainingPills == 0)
+                    {
+                        item.SetScrapValue(1);
+                        item.itemUsedUp = true;
+                    }
+                }));
             }
         }
 
@@ -99,6 +107,7 @@ namespace ItemsReworked.Scrap
 
         private IEnumerator GradualHealing(PlayerControllerB player, int pills)
         {
+            ItemsReworkedPlugin.mls.LogInfo("CoroutineStarted");
             int targetHealth = player.health + (pills * pillQuality);
             // Time needed until targetHealth is reached
             float healingDuration;
@@ -148,6 +157,9 @@ namespace ItemsReworked.Scrap
 
             // Update UI one last time
             HUDManager.Instance.UpdateHealthUI(player.health, false);
+
+            // Reset Special Scenario
+            inSpecialScenario = false;
         }
     }
 }
