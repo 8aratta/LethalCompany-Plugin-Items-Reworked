@@ -15,6 +15,11 @@ namespace ItemsReworked.Scrap
             uses = CalculateUses(remote.scrapValue);
         }
 
+        public override void InspectItem(PlayerControllerB player, GrabbableObject item)
+        {
+            ItemsReworkedPlugin.mls.LogInfo($"Remaining uses: {uses}.");
+        }
+
         public override void UseItem(PlayerControllerB player, GrabbableObject item)
         {
             if (uses > 0)
@@ -27,10 +32,6 @@ namespace ItemsReworked.Scrap
                     RemoteMalfunction(player, item);
                 }));
             }
-        }
-        public override void InspectItem(PlayerControllerB player, GrabbableObject item)
-        {
-            ItemsReworkedPlugin.mls.LogInfo($"Remaining uses: {uses}.");
         }
 
         private int CalculateUses(int scrapValue)
@@ -94,7 +95,7 @@ namespace ItemsReworked.Scrap
             System.Random random = new System.Random();
             int randomNumber = random.Next(0, 101);
 
-            //10% Chance to be electrocuted to death //CONFIG
+            //5% Chance to be electrocuted to death //CONFIG
             if (randomNumber <= 5)
             {
                 uses = 0;

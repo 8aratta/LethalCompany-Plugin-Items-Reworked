@@ -88,6 +88,7 @@
     <Compile Include="Handlers\ScrapHandler.cs" />
     <Compile Include="ItemsReworkedPlugin.cs" />
     <Compile Include="Scrap\BaseItem.cs" />
+    <Compile Include="Scrap\LaserPointer.cs" />
     <Compile Include="Scrap\RedSodaCan.cs" />
     <Compile Include="Scrap\Candy.cs" />
     <Compile Include="Scrap\Flask.cs" />
