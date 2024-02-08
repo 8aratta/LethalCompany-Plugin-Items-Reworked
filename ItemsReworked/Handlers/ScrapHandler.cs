@@ -49,6 +49,23 @@ namespace ItemsReworked.Handlers
             }
         }
 
+        public void SpecialUse(GrabbableObject scrapItem, PlayerControllerB player)
+        {
+            ItemsReworkedPlugin.mls.LogInfo($"SpecialUseCalled for {scrapItem.name}");
+            int instanceId = scrapItem.GetInstanceID();
+            if (scrapItemDictionary.ContainsKey(instanceId))
+            {
+
+                ItemsReworkedPlugin.mls.LogInfo($"SpecialUseCalled for {scrapItemDictionary[instanceId].hasSpecialUse}");
+                if (scrapItemDictionary[instanceId].hasSpecialUse)
+                {
+                    ItemsReworkedPlugin.mls.LogInfo($"Item has special use");
+                    BaseItem item = scrapItemDictionary[instanceId];
+                    item.SpecialUseItem(player, scrapItem);
+                }
+            }
+        }
+
         public void InspectScrapItem(GrabbableObject scrapItem, PlayerControllerB player)
         {
             int instanceId = scrapItem.GetInstanceID();
@@ -76,6 +93,8 @@ namespace ItemsReworked.Handlers
                     return new RedSodaCan(scrapItem);
                 case "Remote":
                     return new Remote(scrapItem);
+                case "LaserPointer":
+                    return new LaserPointer(scrapItem);
                 default:
                     ItemsReworkedPlugin.mls.LogInfo($"Unsupported scrap item type {scrapItem.name} picked up");
                     return null;

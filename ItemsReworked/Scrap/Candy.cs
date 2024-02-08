@@ -13,6 +13,11 @@ namespace ItemsReworked.Scrap
             throw new System.NotImplementedException();
         }
 
+        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override void UseItem(PlayerControllerB player, GrabbableObject item)
         {
             if (!item.itemUsedUp && player.insanityLevel > 1f)

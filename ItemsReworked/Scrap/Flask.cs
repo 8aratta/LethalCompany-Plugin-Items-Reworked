@@ -96,5 +96,10 @@ namespace ItemsReworked.Scrap
 
             HUDManager.Instance.UpdateHealthUI(player.health, false);
         }
+
+        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

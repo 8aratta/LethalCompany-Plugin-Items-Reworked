@@ -47,6 +47,16 @@ namespace ItemsReworked.Patches
             }
         }
 
+        [HarmonyPatch("ItemSecondaryUse_performed")]
+        [HarmonyPrefix]
+        private static void ItemSecondaryUse_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
+        {
+            if (___currentlyHeldObjectServer != null)
+            {
+                // Use the scrap item through the ScrapHandler
+                pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer, __instance);
+            }
+        }
         //[HarmonyPatch("ItemSold")]
         //[HarmonyPrefix]
         //private static void SellScrapItem(GrabbableObject scrapItemSold)

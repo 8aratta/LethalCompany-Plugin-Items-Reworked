@@ -77,6 +77,11 @@ namespace ItemsReworked.Scrap
                 inSpecialScenario = false;
                 ItemsReworkedPlugin.mls.LogInfo($"Effect has worn off");
             }
+
+            public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

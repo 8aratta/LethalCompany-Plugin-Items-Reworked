@@ -126,5 +126,10 @@ namespace ItemsReworked.Scrap
                 remote.SetScrapValue(1);
             }
         }
+
+        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
