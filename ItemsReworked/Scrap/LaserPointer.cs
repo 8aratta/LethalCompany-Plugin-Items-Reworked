@@ -9,9 +9,12 @@ namespace ItemsReworked.Scrap
         private bool isTurnedOn = false;
         private ForestGiantAI distractedGiant;
         private RaycastHit laserPoint;
+        private Vector3 lastValidLaserSpot;
+        private int currentRayMask = 1;
 
         internal LaserPointer(GrabbableObject laserPointer)
         {
+            distractedGiant = null;
             inSpecialScenario = false;
             hasSpecialUse = true;
             isTurnedOn = false;
@@ -27,7 +30,7 @@ namespace ItemsReworked.Scrap
             if (item != null && player != null)
             {
                 if (item.insertedBattery.charge > 0)
-                    ToggleIsTurnedOn(!isTurnedOn);
+                    ToggleLaserPointerPower(!isTurnedOn);
 
                 if (isTurnedOn && distractedGiant == null)
                     player.StartCoroutine(EmitLaserRay(player, item));
@@ -46,7 +49,7 @@ namespace ItemsReworked.Scrap
             }
         }
 
-        private void ToggleIsTurnedOn(bool enable)
+        private void ToggleLaserPointerPower(bool enable)
         {
             ItemsReworkedPlugin.mls.LogInfo($"Setting Laser to {enable}");
             if (isTurnedOn != enable)
@@ -61,20 +64,22 @@ namespace ItemsReworked.Scrap
 
         private IEnumerator EmitLaserRay(PlayerControllerB player, GrabbableObject item)
         {
-            ItemsReworkedPlugin.mls.LogInfo($"Entering EmitLaserRay");
-
-            //sfx loading laser
-
             while (isTurnedOn && item.insertedBattery.charge > 0 && item != null)
             {
                 // Create a ray in the direction of the laser pointer
                 Ray ray = new Ray(item.transform.position, item.transform.forward);
 
-                // Define the maximum distance the ray can travel
-                float maxDistance = 100f;
+                float maxDistance = 75f;
+
+                if (distractedGiant != null)
+                    currentRayMask = StartOfRound.Instance.walkableSurfacesMask;
+                else
+                    currentRayMask = StartOfRound.Instance.allPlayersCollideWithMask;
+
+
 
                 // Check if the ray hits any colliders
-                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, StartOfRound.Instance.walkableSurfacesMask))
+                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, currentRayMask))
                 {
                     laserPoint = hit;
 
@@ -101,16 +106,11 @@ namespace ItemsReworked.Scrap
             }
 
             // Battery is depleted, end the distraction process
-            isTurnedOn = false;
-            inSpecialScenario = false;
-            distractedGiant = null;
-            ItemsReworkedPlugin.mls.LogInfo("Ending EmitLaser");
+            ToggleLaserPointerPower(false);
         }
 
-        private IEnumerator SpecialLaser(GrabbableObject item, RaycastHit hit) // make this get RayCastHit instead of generatin a new laser
+        private IEnumerator SpecialLaser(GrabbableObject item, RaycastHit hit)
         {
-            ItemsReworkedPlugin.mls.LogInfo("Entering Special Laser");
-
             // Drain the battery
             float batteryDrainRate = 0.1f;
             item.insertedBattery.charge -= batteryDrainRate * Time.deltaTime;
@@ -128,25 +128,26 @@ namespace ItemsReworked.Scrap
             }
 
             // Battery is depleted, end the distraction process
-            isTurnedOn = false;
-            inSpecialScenario = false;
-            distractedGiant = null;
-            ItemsReworkedPlugin.mls.LogInfo("Ending Special Laser");
+            ToggleLaserPointerPower(false);
         }
 
-        private void DistractingGiant(ForestGiantAI forestGiant, RaycastHit hit)
+        private void DistractingGiant(ForestGiantAI forestGiant, RaycastHit laserPoint)
         {
-            // Set the destination to the point
-            if (forestGiant.currentBehaviourStateIndex != 0)
+            // Check if laserPoint is in the vicinity of giant
+            if (Vector3.Distance(forestGiant.transform.position, laserPoint.transform.position) < 8f)
+                lastValidLaserSpot = laserPoint.point;
+            else
             {
-                forestGiant.currentBehaviourStateIndex = 0;
-                forestGiant.investigatePosition = hit.point;
-                forestGiant.investigating = true;
-            }
+                //Set this point as last valid spot
+                forestGiant.investigatePosition = lastValidLaserSpot;
 
-            forestGiant.turnCompass.LookAt(hit.point);
-            forestGiant.SetDestinationToPosition(hit.point);
-            forestGiant.moveTowardsDestination = true;
+                // Set the destination to the point
+                if (forestGiant.currentBehaviourStateIndex != 0)
+                    forestGiant.currentBehaviourStateIndex = 0;
+
+                forestGiant.turnCompass.LookAt(laserPoint.point);
+                forestGiant.SetDestinationToPosition(laserPoint.point);
+            }
         }
     }
 }
