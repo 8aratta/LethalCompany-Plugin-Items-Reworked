@@ -38,7 +38,7 @@ namespace ItemsReworked.Scrap
                 const int minValue = 24;
                 const int maxValue = 68;
                 const float minDuration = 10f; // CONFIG
-                const float maxDuration = 60f;    // CONFIG
+                const float maxDuration = 30f;    // CONFIG
 
                 // Calculate the percentage of scrapValue between minValue and maxValue
                 float percentage = (float)(scrapValue - minValue) / (maxValue - minValue);
