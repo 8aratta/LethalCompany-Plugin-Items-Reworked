@@ -1,5 +1,6 @@
 ﻿#region usings
 using GameNetcodeStuff;
+using ItemsReworked.Handlers;
 using System.Collections;
 using UnityEngine;
 #endregion
@@ -9,6 +10,11 @@ namespace ItemsReworked.Scrap
     internal class RedSodaCan : BaseItem
     {
         float effectDuration;
+
+        internal RedSodaCan(GrabbableObject redSodaCan)
+        {
+            effectDuration = CalculateEffectDuration(redSodaCan.scrapValue);
+        }
 
         public override void InspectItem(PlayerControllerB player, GrabbableObject item)
         {
@@ -26,10 +32,16 @@ namespace ItemsReworked.Scrap
         {
             if (!item.itemUsedUp)
             {
-                effectDuration = CalculateEffectDuration(item.scrapValue);
-                player.StartCoroutine(Energize(player));
                 item.itemUsedUp = true;
-                item.SetScrapValue(item.scrapValue / 2);
+                System.Random random = new System.Random();
+                var soundName = "Soda" + random.Next(1, 3) + ".mp3";
+                AudioHandler.PlaySound(player, "Scrap\\RedSodaCan\\" + soundName);
+                ItemsReworkedPlugin.mls.LogInfo($"playing: {soundName}");
+                player.StartCoroutine(DelayedActivation(player, item, 3f, () =>
+                {
+                    player.StartCoroutine(Energize(player));
+                    item.SetScrapValue(item.scrapValue / 2);
+                }));
             }
         }
 
@@ -53,7 +65,7 @@ namespace ItemsReworked.Scrap
         {
             float elapsedTime = 0f;
             float originalForce = player.jumpForce;
-          
+
             while (elapsedTime < effectDuration)
             {
                 player.jumpForce = originalForce * 1.5f;
@@ -62,8 +74,8 @@ namespace ItemsReworked.Scrap
             }
 
             ItemsReworkedPlugin.mls.LogInfo($"Effect worn off");
+            ItemsReworkedPlugin.mls.LogInfo($"Original force: {originalForce}");
             player.jumpForce = originalForce;
-
         }
     }
 }

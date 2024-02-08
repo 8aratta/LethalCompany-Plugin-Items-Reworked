@@ -1,5 +1,6 @@
 ﻿#region usings
 using GameNetcodeStuff;
+using ItemsReworked.Handlers;
 #endregion
 
 namespace ItemsReworked.Scrap
@@ -36,22 +37,26 @@ namespace ItemsReworked.Scrap
         {
             if (!item.itemUsedUp)
             {
-                switch (flaskEffect)
-                {
-                    //EFFECT IDEAS:
-                    // SCARED / STRONG / BRAVE / SLOWED / INVERTED CONTROLS / FROZEN / INSTANT DEATH 
-
-                    case "Intoxication":
-                        ApplyDrunkEffect(player);
-                        break;
-                    case "Poisoning":
-                        ApplyPoisonEffect(player);
-                        break;
-                    case "Healing":
-                        ApplyHealEffect(player, item.scrapValue);
-                        break;
-                }
                 item.itemUsedUp = true;
+
+                player.StartCoroutine(DelayedActivation(player, item, 3f, () =>
+                    {
+                        switch (flaskEffect)
+                        {
+                            //EFFECT IDEAS:
+                            // SCARED / STRONG / BRAVE / SLOWED / INVERTED CONTROLS / FROZEN / INSTANT DEATH 
+
+                            case "Intoxication":
+                                ApplyDrunkEffect(player);
+                                break;
+                            case "Poisoning":
+                                ApplyPoisonEffect(player);
+                                break;
+                            case "Healing":
+                                ApplyHealEffect(player, item.scrapValue);
+                                break;
+                        }
+                    }));
                 item.SetScrapValue(3);
             }
         }
@@ -59,8 +64,9 @@ namespace ItemsReworked.Scrap
         private void ApplyDrunkEffect(PlayerControllerB player)
         {
             // Make the player drunk
+            AudioHandler.PlaySound(player, "Scrap\\Flask\\Intoxication.mp3");
             player.drunkness = 1f;
-            HUDManager.Instance.DisplayTip("Drunk Effect", "You feel a bit dizzy.");
+            HUDManager.Instance.DisplayTip("Intoxication", "You feel a bit dizzy.");
         }
 
         private void ApplyPoisonEffect(PlayerControllerB player)
