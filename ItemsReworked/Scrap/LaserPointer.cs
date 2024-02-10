@@ -10,7 +10,7 @@ namespace ItemsReworked.Scrap
         private ForestGiantAI distractedGiant;
         private RaycastHit laserPoint;
         private Vector3 lastValidLaserSpot;
-        private int currentRayMask = 1;
+        private int currentRayMask;
 
         internal LaserPointer(GrabbableObject laserPointer)
         {
@@ -75,6 +75,7 @@ namespace ItemsReworked.Scrap
                     currentRayMask = StartOfRound.Instance.walkableSurfacesMask;
                 else
                     currentRayMask = StartOfRound.Instance.allPlayersCollideWithMask;
+                //distractedGiant.gameObject.layer; --> is null
 
 
 

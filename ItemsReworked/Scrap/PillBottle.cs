@@ -64,8 +64,8 @@ namespace ItemsReworked.Scrap
         {
             const int minScrapValue = 16;
             const int maxScrapValue = 40;
-            const int minPills = 2; //CONFIG
-            const int maxPills = 33; //CONFIG
+            int minPills = ItemsReworkedPlugin.MinPills.Value;
+            int maxPills = ItemsReworkedPlugin.MaxPills.Value;
 
             if (scrapValue <= minScrapValue)
             {

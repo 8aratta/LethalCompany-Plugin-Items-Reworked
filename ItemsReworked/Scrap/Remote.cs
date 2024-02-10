@@ -38,8 +38,8 @@ namespace ItemsReworked.Scrap
         {
             const int minScrapValue = 20;
             const int maxScrapValue = 48;
-            const int minUses = 1; //CONFIG
-            const int maxUses = 10; //CONFIG
+            int minUses = ItemsReworkedPlugin.MinRemoteUses.Value;
+            int maxUses = ItemsReworkedPlugin.MaxRemoteUses.Value;
 
             if (scrapValue <= minScrapValue)
             {
@@ -71,19 +71,19 @@ namespace ItemsReworked.Scrap
 
             foreach (var hit in ray)
             {
-                Landmine Landmine = hit.collider.GetComponent<Landmine>();
+                Landmine landmine = hit.collider.GetComponent<Landmine>();
                 Turret turret = hit.collider.GetComponent<Turret>();
-                //Avoid detecting self
-                if (turret != null)
+
+                if (turret != null & ItemsReworkedPlugin.ToggleTurrets.Value)
                 {
                     ItemsReworkedPlugin.mls.LogInfo("Toggling Turret");
                     turret.ToggleTurretEnabled(!turret.enabled);
                     return true;
                 }
-                if (Landmine != null)
+                if (landmine != null && ItemsReworkedPlugin.DetonateMines.Value)
                 {
                     ItemsReworkedPlugin.mls.LogInfo("HIT MINE");
-                    Landmine.ExplodeMineServerRpc();
+                    landmine.ExplodeMineServerRpc();
                     return true;
                 }
             }
@@ -95,8 +95,8 @@ namespace ItemsReworked.Scrap
             System.Random random = new System.Random();
             int randomNumber = random.Next(0, 101);
 
-            //5% Chance to be electrocuted to death //CONFIG
-            if (randomNumber <= 5)
+            // X% Probability to be electrocuted to death
+            if (randomNumber <= ItemsReworkedPlugin.RemoteExplosionProbability.Value)
             {
                 uses = 0;
                 Landmine.SpawnExplosion(remote.transform.position, true);
@@ -112,8 +112,8 @@ namespace ItemsReworked.Scrap
 
                 remote.SetScrapValue(1);
             }
-            //15% Chance for remote to fry itself
-            else if (randomNumber <= 15)
+            // X% Probability for remote to fry itself
+            else if (randomNumber <= ItemsReworkedPlugin.RemoteZapProbability.Value)
             {
                 if (remote.heldByPlayerOnServer)
                 {

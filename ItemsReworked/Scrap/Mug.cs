@@ -9,6 +9,10 @@ namespace ItemsReworked.Scrap
 {
     namespace ItemsReworked.Scrap
     {
+        /// <summary>
+        /// TODO: Change inf stamina to actual boost
+        /// Add balancing --> Stamina depletion/diarreha
+        /// </summary>
         internal class Mug : BaseItem
         {
             float effectDuration;
@@ -50,8 +54,8 @@ namespace ItemsReworked.Scrap
             {
                 const int minValue = 24;
                 const int maxValue = 68;
-                const float minDuration = 10f; // CONFIG
-                const float maxDuration = 30f;    // CONFIG
+                float minDuration = ItemsReworkedPlugin.MinDurationStaminaBoost.Value;
+                float maxDuration = ItemsReworkedPlugin.MaxDurationStaminaBoost.Value;
 
                 // Calculate the percentage of scrapValue between minValue and maxValue
                 float percentage = (float)(scrapValue - minValue) / (maxValue - minValue);

@@ -54,8 +54,8 @@ namespace ItemsReworked.Scrap
         {
             const int minValue = 19;
             const int maxValue = 90;
-            const float minDuration = 5f; // CONFIG
-            const float maxDuration = 60f;    // CONFIG
+            float minDuration = ItemsReworkedPlugin.MinDurationJumpBoost.Value;
+            float maxDuration = ItemsReworkedPlugin.MaxDurationJumpBoost.Value;
 
             // Calculate the percentage of scrapValue between minValue and maxValue
             float percentage = (float)(scrapValue - minValue) / (maxValue - minValue);
