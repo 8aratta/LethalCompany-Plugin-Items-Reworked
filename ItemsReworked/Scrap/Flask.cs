@@ -103,7 +103,7 @@ namespace ItemsReworked.Scrap
                                 ApplyDrunkEffect(player);
                                 break;
                             case "Poisoning":
-                                ApplyPoisonEffect(player);
+                                player.StartCoroutine(ApplyPoisonEffect(player));
                                 break;
                             case "Healing":
                                 player.StartCoroutine(ApplyHealEffect(player, item.scrapValue));
