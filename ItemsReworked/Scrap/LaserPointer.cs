@@ -11,14 +11,12 @@ namespace ItemsReworked.Scrap
     {
         private bool isTurnedOn = false;
         private Dictionary<ForestGiantAI, Vector3> distractedGiants;
-        private Vector3 lastLaserPointSeenByGiant;
-        private ForestGiantAI focusedForestGiant;
-        private float batteryDrainRate = 0.1f; //config
+        private ForestGiantAI distractedGiant;
 
         internal LaserPointer(GrabbableObject laserPointer)
         {
             distractedGiants = new Dictionary<ForestGiantAI, Vector3>();
-            focusedForestGiant = null;
+            distractedGiant = null;
             hasSpecialUse = false;
             isTurnedOn = false;
         }
@@ -56,7 +54,7 @@ namespace ItemsReworked.Scrap
             if (!isTurnedOn)
             {
                 distractedGiants.Clear();
-                focusedForestGiant = null;
+                distractedGiant = null;
             }
         }
 
@@ -65,7 +63,7 @@ namespace ItemsReworked.Scrap
             while (isTurnedOn && item.insertedBattery.charge > 0 && item != null)
             {
                 // Drain Battery
-                item.insertedBattery.charge -= batteryDrainRate * Time.deltaTime;
+                item.insertedBattery.charge -= ItemsReworkedPlugin.LaserPointerBatteryDrain.Value * Time.deltaTime;
 
                 // Create a ray in the direction of the laser pointer
                 Ray ray = new Ray(item.transform.position, item.transform.forward);
@@ -74,16 +72,16 @@ namespace ItemsReworked.Scrap
                 // Check if the ray hits any colliders
                 if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, StartOfRound.Instance.walkableSurfacesMask))
                 {
-                    if (focusedForestGiant == null)
+                    if (distractedGiant == null)
                     {
                         // Check if the collider belongs to a ForestGiantAI within 50 ingame meters
                         Collider[] hitColliders = Physics.OverlapSphere(hit.point, 50f);
                         foreach (var hitCollider in hitColliders)
                         {
                             // Check if the collider belongs to a ForestGiantAI
-                            focusedForestGiant = hitCollider.GetComponent<ForestGiantAI>();
-                            if (focusedForestGiant != null && !distractedGiants.ContainsKey(focusedForestGiant))
-                                distractedGiants.Add(focusedForestGiant, new Vector3());
+                            distractedGiant = hitCollider.GetComponent<ForestGiantAI>();
+                            if (distractedGiant != null && !distractedGiants.ContainsKey(distractedGiant))
+                                distractedGiants.Add(distractedGiant, new Vector3());
                         }
                     }
                     if (distractedGiants.Count > 0)
@@ -100,20 +98,22 @@ namespace ItemsReworked.Scrap
         {
             foreach (var giant in forestGiants)
             {
-                if (Vector3.Distance(giant.Key.transform.position, laser.transform.position) < 200f && !giant.Key.inSpecialAnimation)
+                // Ensure that laser is within ROV & giant is not in the middle of stun or eating of player animation
+                if (!giant.Key.inSpecialAnimation &&
+                    Vector3.Distance(giant.Key.transform.position, laser.transform.position) < ItemsReworkedPlugin.GiantsRangeOfView.Value)
                 {
                     // Set this point as last seen spot
                     distractedGiants[giant.Key] = laser.point;
-
-                    // Move to laser
-                    giant.Key.SetDestinationToPosition(laser.point);
 
                     // Look at laser
                     giant.Key.lookTarget.position = laser.point;
                     giant.Key.turnCompass.LookAt(laser.point);
 
-                    if (!giant.Key.inSpecialAnimation)
-                        giant.Key.SwitchToBehaviourState(0);
+                    // Move to laser
+                    giant.Key.SetDestinationToPosition(laser.point);
+
+                    // He need some milk
+                    giant.Key.SwitchToBehaviourState(0);
                 }
                 else
                 {
