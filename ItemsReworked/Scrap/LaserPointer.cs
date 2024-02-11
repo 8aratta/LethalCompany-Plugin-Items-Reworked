@@ -1,28 +1,31 @@
-﻿using GameNetcodeStuff;
+﻿#region usings
+using GameNetcodeStuff;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+#endregion
 
 namespace ItemsReworked.Scrap
 {
     internal class LaserPointer : BaseItem
     {
         private bool isTurnedOn = false;
-        private ForestGiantAI distractedGiant;
-        private RaycastHit laserPoint;
-        private Vector3 lastValidLaserSpot;
-        private int currentRayMask;
+        private Dictionary<ForestGiantAI, Vector3> distractedGiants;
+        private Vector3 lastLaserPointSeenByGiant;
+        private ForestGiantAI focusedForestGiant;
+        private float batteryDrainRate = 0.1f; //config
 
         internal LaserPointer(GrabbableObject laserPointer)
         {
-            distractedGiant = null;
-            inSpecialScenario = false;
-            hasSpecialUse = true;
+            distractedGiants = new Dictionary<ForestGiantAI, Vector3>();
+            focusedForestGiant = null;
+            hasSpecialUse = false;
             isTurnedOn = false;
         }
 
         public override void InspectItem(PlayerControllerB player, GrabbableObject item)
         {
-
+            HUDManager.Instance.DisplayTip("Laser Pointer", "Giants are easily distracted by its light");
         }
 
         public override void UseItem(PlayerControllerB player, GrabbableObject item)
@@ -32,7 +35,7 @@ namespace ItemsReworked.Scrap
                 if (item.insertedBattery.charge > 0)
                     ToggleLaserPointerPower(!isTurnedOn);
 
-                if (isTurnedOn && distractedGiant == null)
+                if (isTurnedOn)
                     player.StartCoroutine(EmitLaserRay(player, item));
             }
             else
@@ -41,12 +44,7 @@ namespace ItemsReworked.Scrap
 
         public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
         {
-            if (distractedGiant != null && !inSpecialScenario)
-            {
-                HUDManager.Instance.DisplayTip("Laser Pointer", "Distracting Giant...", true);
-                inSpecialScenario = true;
-                player.StartCoroutine(SpecialLaser(item, laserPoint));
-            }
+            throw new System.NotImplementedException();
         }
 
         private void ToggleLaserPointerPower(bool enable)
@@ -57,8 +55,8 @@ namespace ItemsReworked.Scrap
 
             if (!isTurnedOn)
             {
-                distractedGiant = null;
-                inSpecialScenario = false;
+                distractedGiants.Clear();
+                focusedForestGiant = null;
             }
         }
 
@@ -66,88 +64,63 @@ namespace ItemsReworked.Scrap
         {
             while (isTurnedOn && item.insertedBattery.charge > 0 && item != null)
             {
+                // Drain Battery
+                item.insertedBattery.charge -= batteryDrainRate * Time.deltaTime;
+
                 // Create a ray in the direction of the laser pointer
                 Ray ray = new Ray(item.transform.position, item.transform.forward);
-
-                float maxDistance = 75f;
-
-                if (distractedGiant != null)
-                    currentRayMask = StartOfRound.Instance.walkableSurfacesMask;
-                else
-                    currentRayMask = StartOfRound.Instance.allPlayersCollideWithMask;
-                //distractedGiant.gameObject.layer; --> is null
-
-
+                float maxDistance = 800f;
 
                 // Check if the ray hits any colliders
-                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, currentRayMask))
+                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, StartOfRound.Instance.walkableSurfacesMask))
                 {
-                    laserPoint = hit;
-
-                    if (distractedGiant == null)
+                    if (focusedForestGiant == null)
                     {
-                        // Check if the collider belongs to a ForestGiantAI within 1 ingame meters
-                        Collider[] hitColliders = Physics.OverlapSphere(hit.point, 1f);
-
+                        // Check if the collider belongs to a ForestGiantAI within 50 ingame meters
+                        Collider[] hitColliders = Physics.OverlapSphere(hit.point, 50f);
                         foreach (var hitCollider in hitColliders)
                         {
                             // Check if the collider belongs to a ForestGiantAI
-                            ForestGiantAI forestGiant = hitCollider.GetComponent<ForestGiantAI>();
-                            if (forestGiant != null)
-                            {
-                                // A ForestGiantAI is detected within the specified radius
-                                HUDManager.Instance.DisplayTip("Laser Pointer", "Giant Detected! Press 'Q' to distract");
-
-                                distractedGiant = forestGiant;
-                            }
+                            focusedForestGiant = hitCollider.GetComponent<ForestGiantAI>();
+                            if (focusedForestGiant != null && !distractedGiants.ContainsKey(focusedForestGiant))
+                                distractedGiants.Add(focusedForestGiant, new Vector3());
                         }
                     }
+                    if (distractedGiants.Count > 0)
+                        DistractGiants(distractedGiants, hit);
                 }
                 yield return null;
             }
-
             // Battery is depleted, end the distraction process
-            ToggleLaserPointerPower(false);
+            if (item.insertedBattery.charge <= 0)
+                ToggleLaserPointerPower(false);
         }
 
-        private IEnumerator SpecialLaser(GrabbableObject item, RaycastHit hit)
+        private void DistractGiants(Dictionary<ForestGiantAI, Vector3> forestGiants, RaycastHit laser)
         {
-            // Drain the battery
-            float batteryDrainRate = 0.1f;
-            item.insertedBattery.charge -= batteryDrainRate * Time.deltaTime;
-
-            // Continuously drain the battery until it's empty
-            while (isTurnedOn && item.insertedBattery.charge > 0f && item != null)
+            foreach (var giant in forestGiants)
             {
-                // Drain the battery
-                item.insertedBattery.charge -= batteryDrainRate * Time.deltaTime;
+                if (Vector3.Distance(giant.Key.transform.position, laser.transform.position) < 200f && !giant.Key.inSpecialAnimation)
+                {
+                    // Set this point as last seen spot
+                    distractedGiants[giant.Key] = laser.point;
 
-                // Distract the Giant to where the laser is pointed at
-                DistractingGiant(distractedGiant, hit);
+                    // Move to laser
+                    giant.Key.SetDestinationToPosition(laser.point);
 
-                yield return null;
-            }
+                    // Look at laser
+                    giant.Key.lookTarget.position = laser.point;
+                    giant.Key.turnCompass.LookAt(laser.point);
 
-            // Battery is depleted, end the distraction process
-            ToggleLaserPointerPower(false);
-        }
-
-        private void DistractingGiant(ForestGiantAI forestGiant, RaycastHit laserPoint)
-        {
-            // Check if laserPoint is in the vicinity of giant
-            if (Vector3.Distance(forestGiant.transform.position, laserPoint.transform.position) < 8f)
-                lastValidLaserSpot = laserPoint.point;
-            else
-            {
-                //Set this point as last valid spot
-                forestGiant.investigatePosition = lastValidLaserSpot;
-
-                // Set the destination to the point
-                if (forestGiant.currentBehaviourStateIndex != 0)
-                    forestGiant.currentBehaviourStateIndex = 0;
-
-                forestGiant.turnCompass.LookAt(laserPoint.point);
-                forestGiant.SetDestinationToPosition(laserPoint.point);
+                    if (!giant.Key.inSpecialAnimation)
+                        giant.Key.SwitchToBehaviourState(0);
+                }
+                else
+                {
+                    // Laser was out of sight, let giant investigate the last spot it saw the laser at
+                    giant.Key.investigatePosition = distractedGiants[giant.Key];
+                    giant.Key.SetDestinationToPosition(distractedGiants[giant.Key], true);
+                }
             }
         }
     }
