@@ -16,7 +16,7 @@ namespace ItemsReworked.Scrap
         // EFFECT IDEAS:
         // SCARED / STRONG / BRAVE / SLOWED / INVERTED CONTROLS / FROZEN / INSTANT DEATH 
         /// </summary>
-        
+
         private System.Random random = new System.Random();
         private string flaskEffect = "None";
 
@@ -75,7 +75,6 @@ namespace ItemsReworked.Scrap
                 }
             }
         }
-
 
         public override void InspectItem(PlayerControllerB player, GrabbableObject item)
         {
@@ -144,7 +143,7 @@ namespace ItemsReworked.Scrap
                 elapsedTime += Time.deltaTime;
                 if (elapsedTime >= 3f) // Adjust the duration as needed
                 {
-                    player.DamagePlayer(1,false);
+                    player.DamagePlayer(1, false);
                     elapsedTime = 0f;
 
                     // Update UI
@@ -167,13 +166,9 @@ namespace ItemsReworked.Scrap
             int healing;
 
             if (flaskValue <= minScrapValue)
-            {
                 healing = minHealing;
-            }
             else if (flaskValue >= maxScrapValue)
-            {
                 healing = maxHealing;
-            }
             else
             {
                 float percentage = (float)(flaskValue - minScrapValue) / (maxScrapValue - minScrapValue);
@@ -199,7 +194,6 @@ namespace ItemsReworked.Scrap
                     // Update UI
                     HUDManager.Instance.UpdateHealthUI(player.health, false);
                 }
-
                 yield return null; // Wait for the next frame
             }
         }

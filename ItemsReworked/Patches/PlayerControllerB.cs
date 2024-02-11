@@ -18,10 +18,7 @@ namespace ItemsReworked.Patches
         {
             grabbedObject.TryGet(out var networkObject);
             var scrapItem = networkObject.gameObject.GetComponentInChildren<GrabbableObject>();
-
-            // Register the scrap item in the ScrapHandler
             pluginInstance.scrapHandler.RegisterScrapItem(scrapItem);
-
             ItemsReworkedPlugin.mls.LogInfo($"{scrapItem.name} picked up.");
         }
 
@@ -30,10 +27,7 @@ namespace ItemsReworked.Patches
         private static void UseScrapItem(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
             if (___currentlyHeldObjectServer != null)
-            {
-                // Use the scrap item through the ScrapHandler
                 pluginInstance.scrapHandler.UseScrapItem(___currentlyHeldObjectServer, __instance);
-            }
         }
 
         [HarmonyPatch("InspectItem_performed")]
@@ -41,10 +35,7 @@ namespace ItemsReworked.Patches
         private static void InspectItem_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
             if (___currentlyHeldObjectServer != null)
-            {
-                // Use the scrap item through the ScrapHandler
                 pluginInstance.scrapHandler.InspectScrapItem(___currentlyHeldObjectServer, __instance);
-            }
         }
 
         [HarmonyPatch("ItemSecondaryUse_performed")]
@@ -52,11 +43,9 @@ namespace ItemsReworked.Patches
         private static void ItemSecondaryUse_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
             if (___currentlyHeldObjectServer != null)
-            {
-                // Use the scrap item through the ScrapHandler
                 pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer, __instance);
-            }
         }
+
         //[HarmonyPatch("ItemSold")]
         //[HarmonyPrefix]
         //private static void SellScrapItem(GrabbableObject scrapItemSold)

@@ -98,7 +98,6 @@
     <Compile Include="Scrap\PillBottle.cs" />
     <Compile Include="Patches\PlayerControllerB.cs" />
     <Compile Include="Scrap\Remote.cs" />
-    <Compile Include="Patches\StartOfRoundPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

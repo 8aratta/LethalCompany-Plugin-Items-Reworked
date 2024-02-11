@@ -35,7 +35,6 @@ namespace ItemsReworked.Handlers
                     return;
                 }
             }
-
             ItemsReworkedPlugin.mls.LogError($"{scrapItem.name} not found in ScrapHandler.");
         }
 
@@ -51,15 +50,11 @@ namespace ItemsReworked.Handlers
 
         public void SpecialUse(GrabbableObject scrapItem, PlayerControllerB player)
         {
-            ItemsReworkedPlugin.mls.LogInfo($"SpecialUseCalled for {scrapItem.name}");
             int instanceId = scrapItem.GetInstanceID();
             if (scrapItemDictionary.ContainsKey(instanceId))
             {
-
-                ItemsReworkedPlugin.mls.LogInfo($"SpecialUseCalled for {scrapItemDictionary[instanceId].hasSpecialUse}");
                 if (scrapItemDictionary[instanceId].hasSpecialUse)
                 {
-                    ItemsReworkedPlugin.mls.LogInfo($"Item has special use");
                     BaseItem item = scrapItemDictionary[instanceId];
                     item.SpecialUseItem(player, scrapItem);
                 }

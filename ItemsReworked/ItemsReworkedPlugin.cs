@@ -210,9 +210,7 @@ namespace ItemsReworked
 
             Instance = this;
             mls = BepInEx.Logging.Logger.CreateLogSource("Loading Items Reworked Plugin");
-
             harmony.PatchAll();
-
             mls.LogInfo("Items Reworked Plugin loaded sucessfully.");
         }
     }
