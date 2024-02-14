@@ -6,52 +6,57 @@ using UnityEngine;
 
 namespace ItemsReworked.Scrap
 {
-    internal class Remote : BaseItem
+    internal class Remote : BaseScrapItem
     {
         private static int uses;
 
-        internal Remote(GrabbableObject remote)
+        internal Remote(GrabbableObject remote) : base(remote)
         {
-            uses = CalculateUses(remote.scrapValue);
+            uses = CalculateUses();
         }
 
-        public override void InspectItem(PlayerControllerB player, GrabbableObject item)
+        public override void InspectItem()
         {
             ItemsReworkedPlugin.mls.LogInfo($"Remaining uses: {uses}.");
         }
 
-        public override void UseItem(PlayerControllerB player, GrabbableObject item)
+        public override void UseItem()
         {
             if (uses > 0)
             {
                 uses--;
                 ActivateRemote();
 
-                player.StartCoroutine(DelayedActivation(player, item, 1.5f, () =>
+                LocalPlayer.StartCoroutine(DelayedActivation( 1.5f, () =>
                 {
-                    RemoteMalfunction(player, item);
+                    RemoteMalfunction();
                 }));
             }
         }
 
-        private int CalculateUses(int scrapValue)
+        public override void SpecialUseItem()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private int CalculateUses()
         {
             const int minScrapValue = 20;
             const int maxScrapValue = 48;
             int minUses = ItemsReworkedPlugin.MinRemoteUses.Value;
             int maxUses = ItemsReworkedPlugin.MaxRemoteUses.Value;
 
-            if (scrapValue <= minScrapValue)
+            if (BaseScrap.scrapValue <= minScrapValue)
             {
                 return minUses;
             }
-            else if (scrapValue >= maxScrapValue)
+            else if (BaseScrap.scrapValue >= maxScrapValue)
             {
                 return maxUses;
             }
             else
             {
-                float percentage = (float)(scrapValue - minScrapValue) / (maxScrapValue - minScrapValue);
+                float percentage = (float)(BaseScrap.scrapValue - minScrapValue) / (maxScrapValue - minScrapValue);
                 int uses = Mathf.RoundToInt(Mathf.Lerp(minUses, maxUses, percentage));
                 if (uses == 0)
                     ItemsReworkedPlugin.mls.LogError("Calculation error in remote uses");
@@ -90,7 +95,7 @@ namespace ItemsReworked.Scrap
             return false;
         }
 
-        private static void RemoteMalfunction(PlayerControllerB player, GrabbableObject remote)
+        private void RemoteMalfunction()
         {
             System.Random random = new System.Random();
             int randomNumber = random.Next(0, 101);
@@ -99,37 +104,34 @@ namespace ItemsReworked.Scrap
             if (randomNumber <= ItemsReworkedPlugin.RemoteExplosionProbability.Value)
             {
                 uses = 0;
-                Landmine.SpawnExplosion(remote.transform.position, true);
+                Landmine.SpawnExplosion(BaseScrap.transform.position, true);
 
-                if (remote.heldByPlayerOnServer)
+                if (BaseScrap.heldByPlayerOnServer)
                 {
-                    Vector3 bodyVelocity = (player.gameplayCamera.transform.position + remote.transform.position) / 2f;
-                    remote.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
-                    remote.DestroyObjectInHand(remote.playerHeldBy);
-                    ItemsReworkedPlugin.Instance.scrapHandler.RemoveScrapItem(remote);
-                    ItemsReworkedPlugin.mls.LogInfo($"Remote exploded in the hand of the player '{player.name}'");
+                    Vector3 bodyVelocity = (LocalPlayer.gameplayCamera.transform.position + BaseScrap.transform.position) / 2f;
+                    BaseScrap.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
+                    BaseScrap.DestroyObjectInHand(BaseScrap.playerHeldBy);
+                    ItemsReworkedPlugin.Instance.scrapHandler.RemoveScrapItem(BaseScrap);
+                    ItemsReworkedPlugin.mls.LogInfo($"Remote exploded in the hand of the LocalPlayer '{LocalPlayer.name}'");
                 }
 
-                remote.SetScrapValue(1);
+                BaseScrap.SetScrapValue(1);
             }
             // X% Probability for remote to fry itself
             else if (randomNumber <= ItemsReworkedPlugin.RemoteZapProbability.Value)
             {
-                if (remote.heldByPlayerOnServer)
+                if (BaseScrap.heldByPlayerOnServer)
                 {
-                    AudioHandler.PlaySound(player, "Scrap\\Remote\\Zap.mp3");
-                    remote.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
-                    ItemsReworkedPlugin.mls.LogInfo($"Remote zapped player '{player.name}'");
+                    AudioHandler.PlaySound(LocalPlayer, "Scrap\\Remote\\Zap.mp3");
+                    BaseScrap.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
+                    ItemsReworkedPlugin.mls.LogInfo($"Remote zapped LocalPlayer '{LocalPlayer.name}'");
                 }
 
                 uses = 0;
-                remote.SetScrapValue(1);
+                BaseScrap.SetScrapValue(1);
             }
         }
 
-        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
-        {
-            throw new System.NotImplementedException();
-        }
+
     }
 }

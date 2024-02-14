@@ -1,5 +1,5 @@
 ﻿#region usings
-using GameNetcodeStuff;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,42 +7,42 @@ using UnityEngine;
 
 namespace ItemsReworked.Scrap
 {
-    internal class LaserPointer : BaseItem
+    internal class LaserPointer : BaseScrapItem
     {
         private bool isTurnedOn = false;
         private Dictionary<ForestGiantAI, Vector3> distractedGiants;
         private ForestGiantAI distractedGiant;
 
-        internal LaserPointer(GrabbableObject laserPointer)
+        internal LaserPointer(GrabbableObject laserPointer) : base(laserPointer)
         {
             distractedGiants = new Dictionary<ForestGiantAI, Vector3>();
             distractedGiant = null;
-            hasSpecialUse = false;
-            isTurnedOn = false;
+            hasSecondaryUse = false;
+            isTurnedOn = false; //TODO: isactive base class
         }
 
-        public override void InspectItem(PlayerControllerB player, GrabbableObject item)
+        public override void InspectItem()
         {
             HUDManager.Instance.DisplayTip("Laser Pointer", "Giants are easily distracted by its light");
         }
 
-        public override void UseItem(PlayerControllerB player, GrabbableObject item)
+        public override void UseItem()
         {
-            if (item != null && player != null)
+            if (BaseScrap != null && LocalPlayer != null)
             {
-                if (item.insertedBattery.charge > 0)
+                if (BaseScrap.insertedBattery.charge > 0)
                     ToggleLaserPointerPower(!isTurnedOn);
 
                 if (isTurnedOn)
-                    player.StartCoroutine(EmitLaserRay(player, item));
+                    LocalPlayer.StartCoroutine(EmitLaserRay());
             }
             else
-                ItemsReworkedPlugin.mls.LogError($"Error during using of {item.name}");
+                ItemsReworkedPlugin.mls.LogError($"Error during using of {BaseScrap.name}");
         }
 
-        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+        public override void SpecialUseItem()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void ToggleLaserPointerPower(bool enable)
@@ -58,15 +58,15 @@ namespace ItemsReworked.Scrap
             }
         }
 
-        private IEnumerator EmitLaserRay(PlayerControllerB player, GrabbableObject item)
+        private IEnumerator EmitLaserRay()
         {
-            while (isTurnedOn && item.insertedBattery.charge > 0 && item != null)
+            while (BaseScrap != null && isTurnedOn && BaseScrap.insertedBattery.charge > 0)
             {
                 // Drain Battery
-                item.insertedBattery.charge -= ItemsReworkedPlugin.LaserPointerBatteryDrain.Value * Time.deltaTime;
+                BaseScrap.insertedBattery.charge -= ItemsReworkedPlugin.LaserPointerBatteryDrain.Value * Time.deltaTime;
 
                 // Create a ray in the direction of the laser pointer
-                Ray ray = new Ray(item.transform.position, item.transform.forward);
+                Ray ray = new Ray(BaseScrap.transform.position, BaseScrap.transform.forward);
                 float maxDistance = 800f;
 
                 // Check if the ray hits any colliders
@@ -90,7 +90,7 @@ namespace ItemsReworked.Scrap
                 yield return null;
             }
             // Battery is depleted, end the distraction process
-            if (item.insertedBattery.charge <= 0)
+            if (BaseScrap.insertedBattery.charge <= 0)
                 ToggleLaserPointerPower(false);
         }
 
@@ -98,7 +98,7 @@ namespace ItemsReworked.Scrap
         {
             foreach (var giant in forestGiants)
             {
-                // Ensure that laser is within ROV & giant is not in the middle of stun or eating of player animation
+                // Ensure that laser is within ROV & giant is not in the middle of stun or eating of LocalPlayer animation
                 if (!giant.Key.inSpecialAnimation &&
                     Vector3.Distance(giant.Key.transform.position, laser.transform.position) < ItemsReworkedPlugin.GiantsRangeOfView.Value)
                 {

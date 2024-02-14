@@ -42,6 +42,8 @@ namespace ItemsReworked.Patches
         [HarmonyPrefix]
         private static void ItemSecondaryUse_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
+            ItemsReworkedPlugin.mls.LogInfo($"Player '{__instance.name}' with id:{__instance.actualClientId} secondary use");
+
             if (___currentlyHeldObjectServer != null)
                 pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer, __instance);
         }

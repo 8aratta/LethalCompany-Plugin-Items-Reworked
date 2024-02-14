@@ -2,6 +2,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using GameNetcodeStuff;
 using HarmonyLib;
 using ItemsReworked.Handlers;
 #endregion
@@ -13,19 +14,17 @@ namespace ItemsReworked
     public class ItemsReworkedPlugin : BaseUnityPlugin
     {
         private readonly Harmony harmony = new Harmony("ItemsReworkedPlugin");
-        internal static ItemsReworkedPlugin Instance { get; private set; }
-        internal static ManualLogSource mls;
-
+        internal static ItemsReworkedPlugin? Instance { get; private set; }
+        internal static ManualLogSource? mls;
         internal ScrapHandler scrapHandler = new ScrapHandler();
-
         #region Config
 
         #region Flask Configs
         /// <summary>
         /// NoEffectProbability - Probability for Flask to do nothing
-        /// IntoxicationEffectProbability - Probability for Flask to intoxicate the player
-        /// PoisoningEffectProbability - Probability for Flask to poison the player
-        /// HealingEffectProbability - Probability for Flask to heal the player a certain amount of hp
+        /// IntoxicationEffectProbability - Probability for Flask to intoxicate the LocalPlayer
+        /// PoisoningEffectProbability - Probability for Flask to poison the LocalPlayer
+        /// HealingEffectProbability - Probability for Flask to heal the LocalPlayer a certain amount of hp
         /// MaxHealing - Max amount of healing a flask can do
         /// </summary>
         internal static ConfigEntry<int> NoEffectProbability;
@@ -76,8 +75,8 @@ namespace ItemsReworked
         /// <summary>
         /// Min Uses - Min amount of uses for a remote
         /// Max Uses - Max amount of uses for a remote
-        /// Remote Explosion Probability - Probability for the remote to explode and kill the player
-        /// Remote Zep Probability - Probability for the remote to zap the player
+        /// Remote Explosion Probability - Probability for the remote to explode and kill the LocalPlayer
+        /// Remote Zep Probability - Probability for the remote to zap the LocalPlayer
         /// </summary>
         internal static ConfigEntry<int> MinRemoteUses;
         internal static ConfigEntry<int> MaxRemoteUses;
@@ -102,22 +101,22 @@ namespace ItemsReworked
             IntoxicationEffectProbability = Config.Bind("Flask",
                                                         "IntoxicationEffectProbability",
                                                         50,
-                                                        "Probability of flasks to intoxicate the player.");
+                                                        "Probability of flasks to intoxicate the LocalPlayer.");
 
             PoisoningEffectProbability = Config.Bind("Flask",
                                                      "PoisoningEffectProbability",
                                                      50,
-                                                     "Probability of flasks to poison the player.");
+                                                     "Probability of flasks to poison the LocalPlayer.");
 
             MaxPoison = Config.Bind("Flask",
                                          "MaxPoison",
                                          1,
-                                         "Health left after being poisoned. 0 Kills the player.");
+                                         "Health left after being poisoned. 0 Kills the LocalPlayer.");
 
             HealingEffectProbability = Config.Bind("Flask",
                                                    "HealingEffectProbability",
                                                    1,
-                                                   "Probability of flasks to heal the player.");
+                                                   "Probability of flasks to heal the LocalPlayer.");
 
             MaxHealing = Config.Bind("Flask",
                                      "MaxHealing",
@@ -187,12 +186,12 @@ namespace ItemsReworked
             RemoteExplosionProbability = Config.Bind("Remote",
                                                 "RemoteExplosionProbability",
                                                 5,
-                                                "Probability for the Remote to explode and kill the player when used.");
+                                                "Probability for the Remote to explode and kill the LocalPlayer when used.");
 
             RemoteZapProbability = Config.Bind("Remote",
                                           "RemoteZapProbability",
                                           15,
-                                          "Probability for the Remote to zap and damage the player when used.");
+                                          "Probability for the Remote to zap and damage the LocalPlayer when used.");
 
             DetonateMines = Config.Bind("Remote",
                                         "DetonateMines",

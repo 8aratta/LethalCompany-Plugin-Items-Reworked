@@ -4,27 +4,31 @@ using GameNetcodeStuff;
 
 namespace ItemsReworked.Scrap
 {
-    internal class Candy : BaseItem
+    internal class Candy : BaseScrapItem
     {
         // Give to little girl to make her disappear
+        internal Candy(GrabbableObject candy): base(candy)
+        {
 
-        public override void InspectItem(PlayerControllerB player, GrabbableObject item)
+        }
+
+        public override void InspectItem()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void SpecialUseItem(PlayerControllerB player, GrabbableObject item)
+        public override void SpecialUseItem()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void UseItem(PlayerControllerB player, GrabbableObject item)
+        public override void UseItem()
         {
-            if (!item.itemUsedUp && player.insanityLevel > 1f)
+            if (!BaseScrap.itemUsedUp && LocalPlayer.insanityLevel > 1f)
             {
-                player.insanityLevel = 0f;
-                item.itemUsedUp = true;
-                player.currentlyHeldObject.DiscardItemOnClient();
+                LocalPlayer.insanityLevel = 0f;
+                BaseScrap.itemUsedUp = true;
+                LocalPlayer.currentlyHeldObject.DiscardItemOnClient();
             }
         }
     }
