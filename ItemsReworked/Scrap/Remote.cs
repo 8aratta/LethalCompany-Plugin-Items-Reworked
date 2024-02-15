@@ -17,12 +17,12 @@ namespace ItemsReworked.Scrap
 
         public override void InspectItem()
         {
-            ItemsReworkedPlugin.mls.LogInfo($"Remaining uses: {uses}.");
+            ItemsReworkedPlugin.mls?.LogInfo($"Remaining uses: {uses}.");
         }
 
         public override void UseItem()
         {
-            if (uses > 0)
+            if (LocalPlayer != null && uses > 0)
             {
                 uses--;
                 ActivateRemote();
@@ -59,7 +59,7 @@ namespace ItemsReworked.Scrap
                 float percentage = (float)(BaseScrap.scrapValue - minScrapValue) / (maxScrapValue - minScrapValue);
                 int uses = Mathf.RoundToInt(Mathf.Lerp(minUses, maxUses, percentage));
                 if (uses == 0)
-                    ItemsReworkedPlugin.mls.LogError("Calculation error in remote uses");
+                    ItemsReworkedPlugin.mls?.LogError("Calculation error in remote uses");
                 return uses;
             }
         }
@@ -81,13 +81,13 @@ namespace ItemsReworked.Scrap
 
                 if (turret != null & ItemsReworkedPlugin.ToggleTurrets.Value)
                 {
-                    ItemsReworkedPlugin.mls.LogInfo("Toggling Turret");
+                    ItemsReworkedPlugin.mls?.LogInfo("Toggling Turret");
                     turret.ToggleTurretEnabled(!turret.enabled);
                     return true;
                 }
                 if (landmine != null && ItemsReworkedPlugin.DetonateMines.Value)
                 {
-                    ItemsReworkedPlugin.mls.LogInfo("HIT MINE");
+                    ItemsReworkedPlugin.mls?.LogInfo("HIT MINE");
                     landmine.ExplodeMineServerRpc();
                     return true;
                 }
@@ -112,7 +112,7 @@ namespace ItemsReworked.Scrap
                     BaseScrap.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
                     BaseScrap.DestroyObjectInHand(BaseScrap.playerHeldBy);
                     ItemsReworkedPlugin.Instance.scrapHandler.RemoveScrapItem(BaseScrap);
-                    ItemsReworkedPlugin.mls.LogInfo($"Remote exploded in the hand of the LocalPlayer '{LocalPlayer.name}'");
+                    ItemsReworkedPlugin.mls?.LogInfo($"Remote exploded in the hand of the LocalPlayer '{LocalPlayer.name}'");
                 }
 
                 BaseScrap.SetScrapValue(1);
@@ -124,7 +124,7 @@ namespace ItemsReworked.Scrap
                 {
                     AudioHandler.PlaySound(LocalPlayer, "Scrap\\Remote\\Zap.mp3");
                     BaseScrap.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
-                    ItemsReworkedPlugin.mls.LogInfo($"Remote zapped LocalPlayer '{LocalPlayer.name}'");
+                    ItemsReworkedPlugin.mls?.LogInfo($"Remote zapped LocalPlayer '{LocalPlayer.name}'");
                 }
 
                 uses = 0;

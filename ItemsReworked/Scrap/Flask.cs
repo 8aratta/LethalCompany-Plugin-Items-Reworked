@@ -86,7 +86,7 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (!BaseScrap.itemUsedUp)
+            if (LocalPlayer != null && !BaseScrap.itemUsedUp)
             {
                 BaseScrap.itemUsedUp = true;
 

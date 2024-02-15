@@ -21,7 +21,7 @@ namespace ItemsReworked.Scrap
 
         public override void InspectItem()
         {
-            ItemsReworkedPlugin.mls.LogInfo($"Caffeine effect duration: {effectDuration}");
+            ItemsReworkedPlugin.mls?.LogInfo($"Caffeine effect duration: {effectDuration}");
 
             if (!BaseScrap.itemUsedUp)
                 HUDManager.Instance.DisplayTip("A cup of coffee", "I wonder who left it here... it's still warm.");
@@ -32,12 +32,12 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (!BaseScrap.itemUsedUp && !inSecondaryMode)
+            if (LocalPlayer != null && !BaseScrap.itemUsedUp && !inSecondaryMode)
             {
                 inSecondaryMode = true;
                 var soundName = "Mug.mp3";
                 AudioHandler.PlaySound(LocalPlayer, "Scrap\\Mug\\" + soundName);
-                ItemsReworkedPlugin.mls.LogInfo($"playing: {soundName}");
+                ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
                 LocalPlayer.StartCoroutine(DelayedActivation(1.5f, () =>
                 {
                     LocalPlayer.StartCoroutine(Caffeinated());
@@ -73,7 +73,7 @@ namespace ItemsReworked.Scrap
         {
             float elapsedTime = 0f;
 
-            while (elapsedTime < effectDuration)
+            while (elapsedTime < effectDuration )
             {
                 LocalPlayer.sprintMeter = 1f;
                 LocalPlayer.isSprinting = true;
@@ -82,7 +82,7 @@ namespace ItemsReworked.Scrap
             }
 
             inSecondaryMode = false;
-            ItemsReworkedPlugin.mls.LogInfo($"Effect has worn off");
+            ItemsReworkedPlugin.mls?.LogInfo($"Effect has worn off");
         }
 
 

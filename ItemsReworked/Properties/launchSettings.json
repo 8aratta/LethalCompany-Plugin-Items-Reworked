@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ItemsReworked": {
+      "commandName": "Project"
+    },
+    "Exe": {
+      "commandName": "Executable",
+      "executablePath": "D:\\Program Files\\Steam\\steamapps\\common\\Lethal Company\\Lethal Company.exe"
+    }
+  }
+}

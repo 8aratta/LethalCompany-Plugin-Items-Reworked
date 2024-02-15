@@ -18,6 +18,10 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
+            if (LocalPlayer != null)
+            {
+                AnalyzeItem();
+            }
 
         }
 
@@ -41,9 +45,9 @@ namespace ItemsReworked.Scrap
                 {
                     // Get the ID of the grabbable object
                     int objectId = scrapInView.GetInstanceID();
-                    if(pluginInstance.scrapHandler.scrapItemDictionary.ContainsKey(objectId))
+                    if (pluginInstance.scrapHandler.scrapItemDictionary.ContainsKey(objectId))
                     {
-                        ItemsReworkedPlugin.mls.LogInfo("IT WORKS!");
+                        ItemsReworkedPlugin.mls?.LogInfo("IT WORKS!");
                     }
                 }
             }

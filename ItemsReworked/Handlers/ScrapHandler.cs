@@ -12,34 +12,22 @@ public class ScrapHandler
     public void RegisterScrapItem(GrabbableObject scrapItem)
     {
         int instanceId = scrapItem.GetInstanceID();
-        ItemsReworkedPlugin.mls.LogWarning("Entering RegisterScrapItem");
-        ItemsReworkedPlugin.mls.LogWarning($"instanceId: {instanceId}");
         if (!scrapItemDictionary.ContainsKey(instanceId))
         {
             BaseScrapItem newItem = CreateScrapItem(scrapItem);
             if (newItem != null)
             {
                 scrapItemDictionary.Add(instanceId, newItem);
-                ItemsReworkedPlugin.mls.LogInfo($"{scrapItem.name} registered in ScrapHandler.");
+                ItemsReworkedPlugin.mls?.LogInfo($"{scrapItem.name} registered in ScrapHandler.");
             }
         }
     }
 
     public void UseScrapItem(GrabbableObject scrapItem, PlayerControllerB player)
     {
-        ItemsReworkedPlugin.mls.LogWarning("Entering UseScrapItem");
-
-        int instanceId = scrapItem.GetInstanceID(); // Get the instance ID
-
-        ItemsReworkedPlugin.mls.LogWarning($"scrapItem.GetInstanceID(): {scrapItem.GetInstanceID()}");
-        ItemsReworkedPlugin.mls.LogWarning($"scrapItemDictionary.ContainsKey(instanceId): {scrapItemDictionary.ContainsKey(instanceId)}");
-
-        foreach (var item in scrapItemDictionary)
-            ItemsReworkedPlugin.mls.LogWarning($"scrapItemDictionary item: {item}");
-
+        int instanceId = scrapItem.GetInstanceID();
         if (scrapItemDictionary.ContainsKey(instanceId))
         {
-            ItemsReworkedPlugin.mls.LogWarning("Contained - GOOD");
             BaseScrapItem item = scrapItemDictionary[instanceId];
             item.UseItem();
         }
@@ -52,11 +40,11 @@ public class ScrapHandler
         {
             if (scrapItemDictionary.Remove(instanceId))
             {
-                ItemsReworkedPlugin.mls.LogInfo($"{scrapItem.name} removed from ScrapHandler.");
+                ItemsReworkedPlugin.mls?.LogInfo($"{scrapItem.name} removed from ScrapHandler.");
                 return;
             }
         }
-        ItemsReworkedPlugin.mls.LogError($"{scrapItem.name} not found in ScrapHandler.");
+        ItemsReworkedPlugin.mls?.LogError($"{scrapItem.name} not found in ScrapHandler.");
     }
 
     public void SpecialUse(GrabbableObject scrapItem, PlayerControllerB player)
@@ -84,7 +72,7 @@ public class ScrapHandler
 
     private BaseScrapItem CreateScrapItem(GrabbableObject scrapItem)
     {
-        BaseScrapItem customScrap = null;
+        BaseScrapItem? customScrap = null;
 
         // Create custom ScrapItems 
         switch (scrapItem.name.Replace("(Clone)", null))
@@ -111,12 +99,11 @@ public class ScrapHandler
                 customScrap = new LaserPointer(scrapItem);
                 break;
             default:
-                ItemsReworkedPlugin.mls.LogInfo($"Unsupported scrap item type {scrapItem.name} picked up");
+                ItemsReworkedPlugin.mls?.LogInfo($"Unsupported scrap item type {scrapItem.name} picked up");
                 break;
         }
         if (customScrap == null)
-            ItemsReworkedPlugin.mls.LogError($"Failed to create custom scrap item for {scrapItem.name}");
-
+            ItemsReworkedPlugin.mls?.LogError($"Failed to create custom scrap item for {scrapItem.name}");
         return customScrap;
     }
 }

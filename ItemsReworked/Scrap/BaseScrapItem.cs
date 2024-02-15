@@ -1,14 +1,14 @@
-﻿using GameNetcodeStuff;
+﻿#region usisng
+using GameNetcodeStuff;
 using System.Collections;
 using UnityEngine;
+#endregion
 
 namespace ItemsReworked.Scrap
 {
     public abstract class BaseScrapItem
     {
-#nullable enable
         public static PlayerControllerB? LocalPlayer => HUDManager.Instance != null ? HUDManager.Instance.localPlayer : null;
-#nullable disable
 
         public GrabbableObject BaseScrap;
 

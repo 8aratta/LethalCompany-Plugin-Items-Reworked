@@ -19,7 +19,7 @@ namespace ItemsReworked.Scrap
         public override void InspectItem()
         {
             effectDuration = CalculateEffectDuration(BaseScrap.scrapValue);
-            ItemsReworkedPlugin.mls.LogInfo($"Effect duration: {effectDuration}");
+            ItemsReworkedPlugin.mls?.LogInfo($"Effect duration: {effectDuration}");
 
             if (!BaseScrap.itemUsedUp)
                 HUDManager.Instance.DisplayTip("Some kind of energy drink", "What did they say in those advertisements when I was younger... something about a red bull... and wings? I dunno...");
@@ -35,13 +35,13 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (!BaseScrap.itemUsedUp)
+            if (LocalPlayer != null && !BaseScrap.itemUsedUp)
             {
                 BaseScrap.itemUsedUp = true;
                 System.Random random = new System.Random();
                 var soundName = "Soda" + random.Next(1, 3) + ".mp3";
                 AudioHandler.PlaySound(LocalPlayer, "Scrap\\RedSodaCan\\" + soundName);
-                ItemsReworkedPlugin.mls.LogInfo($"playing: {soundName}");
+                ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
                 LocalPlayer.StartCoroutine(DelayedActivation(3f, () =>
                 {
                     LocalPlayer.StartCoroutine(Energize());
@@ -78,8 +78,8 @@ namespace ItemsReworked.Scrap
                 yield return null;
             }
 
-            ItemsReworkedPlugin.mls.LogInfo($"Effect worn off");
-            ItemsReworkedPlugin.mls.LogInfo($"Original force: {originalForce}");
+            ItemsReworkedPlugin.mls?.LogInfo($"Effect worn off");
+            ItemsReworkedPlugin.mls?.LogInfo($"Original force: {originalForce}");
             LocalPlayer.jumpForce = originalForce;
         }
     }

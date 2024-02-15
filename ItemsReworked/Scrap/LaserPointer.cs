@@ -28,7 +28,7 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (BaseScrap != null && LocalPlayer != null)
+            if (LocalPlayer != null && BaseScrap != null)
             {
                 if (BaseScrap.insertedBattery.charge > 0)
                     ToggleLaserPointerPower(!isTurnedOn);
@@ -37,7 +37,7 @@ namespace ItemsReworked.Scrap
                     LocalPlayer.StartCoroutine(EmitLaserRay());
             }
             else
-                ItemsReworkedPlugin.mls.LogError($"Error during using of {BaseScrap.name}");
+                ItemsReworkedPlugin.mls?.LogError($"Error during using of {BaseScrap.name}");
         }
 
         public override void SpecialUseItem()
@@ -47,7 +47,7 @@ namespace ItemsReworked.Scrap
 
         private void ToggleLaserPointerPower(bool enable)
         {
-            ItemsReworkedPlugin.mls.LogInfo($"Setting Laser to {enable}");
+            ItemsReworkedPlugin.mls?.LogInfo($"Setting Laser to {enable}");
             if (isTurnedOn != enable)
                 isTurnedOn = enable;
 

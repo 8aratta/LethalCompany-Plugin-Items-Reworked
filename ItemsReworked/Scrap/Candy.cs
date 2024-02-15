@@ -24,7 +24,7 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (!BaseScrap.itemUsedUp && LocalPlayer.insanityLevel > 1f)
+            if (LocalPlayer != null && !BaseScrap.itemUsedUp && LocalPlayer.insanityLevel > 1f)
             {
                 LocalPlayer.insanityLevel = 0f;
                 BaseScrap.itemUsedUp = true;

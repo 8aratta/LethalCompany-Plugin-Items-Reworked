@@ -19,7 +19,7 @@ namespace ItemsReworked.Patches
             grabbedObject.TryGet(out var networkObject);
             var scrapItem = networkObject.gameObject.GetComponentInChildren<GrabbableObject>();
             pluginInstance.scrapHandler.RegisterScrapItem(scrapItem);
-            ItemsReworkedPlugin.mls.LogInfo($"{scrapItem.name} picked up.");
+            ItemsReworkedPlugin.mls?.LogInfo($"{scrapItem.name} picked up.");
         }
 
         [HarmonyPatch("ActivateItem_performed")]
@@ -42,7 +42,7 @@ namespace ItemsReworked.Patches
         [HarmonyPrefix]
         private static void ItemSecondaryUse_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
-            ItemsReworkedPlugin.mls.LogInfo($"Player '{__instance.name}' with id:{__instance.actualClientId} secondary use");
+            ItemsReworkedPlugin.mls?.LogInfo($"Player '{__instance.name}' with id:{__instance.actualClientId} secondary use");
 
             if (___currentlyHeldObjectServer != null)
                 pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer, __instance);
@@ -55,7 +55,7 @@ namespace ItemsReworked.Patches
         //    // Remove the scrap item from the ScrapHandler when sold
         //    pluginInstance.scrapHandler.RemoveScrapItem(scrapItemSold);
 
-        //    ItemsReworkedPlugin.mls.LogInfo($"{scrapItemSold.name} sold.");
+        //    ItemsReworkedPlugin.mls?.LogInfo($"{scrapItemSold.name} sold.");
         //}
     }
 }

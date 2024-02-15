@@ -32,12 +32,12 @@ namespace ItemsReworked.Scrap
 
         public override void UseItem()
         {
-            if (!BaseScrap.itemUsedUp && !inSecondaryMode && LocalPlayer.health != 100 && !LocalPlayer.inTerminalMenu)
+            if (LocalPlayer != null && !BaseScrap.itemUsedUp && !inSecondaryMode && LocalPlayer.health != 100 && !LocalPlayer.inTerminalMenu)
             {
                 inSecondaryMode = true;
                 var soundName = "PillPop" + pillQuality + ".mp3";
                 AudioHandler.PlaySound(LocalPlayer, "Scrap\\PillBottle\\" + soundName);
-                ItemsReworkedPlugin.mls.LogInfo($"playing: {soundName}");
+                ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
                 LocalPlayer.StartCoroutine(DelayedActivation(2f, () =>
                 {
                     remainingPills = IngestPills( remainingPills);
@@ -104,7 +104,7 @@ namespace ItemsReworked.Scrap
             }
             else
             {
-                LocalPlayer.StartCoroutine(GradualHealing(pills));
+                LocalPlayer?.StartCoroutine(GradualHealing(pills));
             }
 
             return surplus;
@@ -112,7 +112,7 @@ namespace ItemsReworked.Scrap
 
         private IEnumerator GradualHealing(int pills)
         {
-            ItemsReworkedPlugin.mls.LogInfo("CoroutineStarted");
+            ItemsReworkedPlugin.mls?.LogInfo("CoroutineStarted");
             int targetHealth = LocalPlayer.health + (pills * pillQuality);
             // Time needed until targetHealth is reached
             float healingDuration;
