@@ -19,33 +19,31 @@ namespace ItemsReworked.Patches
             grabbedObject.TryGet(out var networkObject);
             var scrapItem = networkObject.gameObject.GetComponentInChildren<GrabbableObject>();
             pluginInstance.scrapHandler.RegisterScrapItem(scrapItem);
-            ItemsReworkedPlugin.mls?.LogInfo($"{scrapItem.name} picked up.");
+            ItemsReworkedPlugin.mls?.LogInfo($"{scrapItem.name} picked up by {scrapItem.playerHeldBy}");
         }
 
         [HarmonyPatch("ActivateItem_performed")]
         [HarmonyPrefix]
-        private static void UseScrapItem(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
+        private static void UseScrapItem(InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
             if (___currentlyHeldObjectServer != null)
-                pluginInstance.scrapHandler.UseScrapItem(___currentlyHeldObjectServer, __instance);
+                pluginInstance.scrapHandler.UseScrapItem(___currentlyHeldObjectServer);
         }
 
         [HarmonyPatch("InspectItem_performed")]
         [HarmonyPrefix]
-        private static void InspectItem_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
+        private static void InspectItem_performed(InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
             if (___currentlyHeldObjectServer != null)
-                pluginInstance.scrapHandler.InspectScrapItem(___currentlyHeldObjectServer, __instance);
+                pluginInstance.scrapHandler.InspectScrapItem(___currentlyHeldObjectServer);
         }
 
         [HarmonyPatch("ItemSecondaryUse_performed")]
         [HarmonyPrefix]
-        private static void ItemSecondaryUse_performed(PlayerControllerB __instance, InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
+        private static void ItemSecondaryUse_performed(InputAction.CallbackContext context, ref GrabbableObject ___currentlyHeldObjectServer)
         {
-            ItemsReworkedPlugin.mls?.LogInfo($"Player '{__instance.name}' with id:{__instance.actualClientId} secondary use");
-
             if (___currentlyHeldObjectServer != null)
-                pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer, __instance);
+                pluginInstance.scrapHandler.SpecialUse(___currentlyHeldObjectServer);
         }
 
         //[HarmonyPatch("ItemSold")]

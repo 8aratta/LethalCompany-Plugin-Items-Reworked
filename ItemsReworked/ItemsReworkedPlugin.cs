@@ -22,9 +22,9 @@ namespace ItemsReworked
         #region Flask Configs
         /// <summary>
         /// NoEffectProbability - Probability for Flask to do nothing
-        /// IntoxicationEffectProbability - Probability for Flask to intoxicate the LocalPlayer
-        /// PoisoningEffectProbability - Probability for Flask to poison the LocalPlayer
-        /// HealingEffectProbability - Probability for Flask to heal the LocalPlayer a certain amount of hp
+        /// IntoxicationEffectProbability - Probability for Flask to intoxicate the HoldingPlayer
+        /// PoisoningEffectProbability - Probability for Flask to poison the HoldingPlayer
+        /// HealingEffectProbability - Probability for Flask to heal the HoldingPlayer a certain amount of hp
         /// MaxHealing - Max amount of healing a flask can do
         /// </summary>
         internal static ConfigEntry<int> NoEffectProbability;
@@ -75,8 +75,8 @@ namespace ItemsReworked
         /// <summary>
         /// Min Uses - Min amount of uses for a remote
         /// Max Uses - Max amount of uses for a remote
-        /// Remote Explosion Probability - Probability for the remote to explode and kill the LocalPlayer
-        /// Remote Zep Probability - Probability for the remote to zap the LocalPlayer
+        /// Remote Explosion Probability - Probability for the remote to explode and kill the HoldingPlayer
+        /// Remote Zep Probability - Probability for the remote to zap the HoldingPlayer
         /// </summary>
         internal static ConfigEntry<int> MinRemoteUses;
         internal static ConfigEntry<int> MaxRemoteUses;

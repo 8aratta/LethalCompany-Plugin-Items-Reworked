@@ -17,37 +17,44 @@ namespace ItemsReworked.Scrap
         internal Mug(GrabbableObject mug) : base(mug)
         {
             effectDuration = CalculateEffectDuration();
+            ItemDescription = "A warm cup of coffee... wait why is still warm?";
+        }
+
+        public override void UpdateItem()
+        {
+            if (ItemPropertiesDiscovered)
+               ItemDescription = $"A warm cup of coffee... Boosts stamina for {effectDuration} seconds!";
+
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            ItemsReworkedPlugin.mls?.LogInfo($"Caffeine effect duration: {effectDuration}");
-
             if (!BaseScrap.itemUsedUp)
-                HUDManager.Instance.DisplayTip("A cup of coffee", "I wonder who left it here... it's still warm.");
+                HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
             else
-                HUDManager.Instance.DisplayTip("A cup of coffee", "WHO DRANK IT?");
-
+                HUDManager.Instance.DisplayTip($"{ItemName}", "... I need to buy an espresso machine");
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && !BaseScrap.itemUsedUp && !inSecondaryMode)
+            if (HoldingPlayer != null && !BaseScrap.itemUsedUp && !InSpecialScenario)
             {
-                inSecondaryMode = true;
+                InSpecialScenario = true;
                 var soundName = "Mug.mp3";
-                AudioHandler.PlaySound(LocalPlayer, "Scrap\\Mug\\" + soundName);
+                AudioHandler.PlaySound(HoldingPlayer, "Scrap\\Mug\\" + soundName);
                 ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
-                LocalPlayer.StartCoroutine(DelayedActivation(1.5f, () =>
+                HoldingPlayer.StartCoroutine(DelayedActivation(1.5f, () =>
                 {
-                    LocalPlayer.StartCoroutine(Caffeinated());
+                    HoldingPlayer.StartCoroutine(Caffeinated());
                     BaseScrap.itemUsedUp = true;
                     BaseScrap.SetScrapValue(BaseScrap.scrapValue / 2);
                 }));
             }
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new NotImplementedException();
         }
@@ -73,15 +80,15 @@ namespace ItemsReworked.Scrap
         {
             float elapsedTime = 0f;
 
-            while (elapsedTime < effectDuration )
+            while (elapsedTime < effectDuration)
             {
-                LocalPlayer.sprintMeter = 1f;
-                LocalPlayer.isSprinting = true;
+                HoldingPlayer.sprintMeter = 1f;
+                HoldingPlayer.isSprinting = true;
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
 
-            inSecondaryMode = false;
+            InSpecialScenario = false;
             ItemsReworkedPlugin.mls?.LogInfo($"Effect has worn off");
         }
 

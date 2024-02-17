@@ -1,5 +1,4 @@
 ﻿#region usings
-using GameNetcodeStuff;
 using ItemsReworked.Handlers;
 using UnityEngine;
 #endregion
@@ -12,29 +11,40 @@ namespace ItemsReworked.Scrap
 
         internal Remote(GrabbableObject remote) : base(remote)
         {
+            //TODO: make desc dynamic to what player triggered already
+            ItemDescription = "I wonder what I can trigger with this thing...";
             uses = CalculateUses();
+        }
+
+        public override void UpdateItem()
+        {
+            if (ItemPropertiesDiscovered)
+                ItemDescription = $"Triggers Lights, Turrets and Landmines! Has {uses} uses left.";
+
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            ItemsReworkedPlugin.mls?.LogInfo($"Remaining uses: {uses}.");
+            HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && uses > 0)
+            if (HoldingPlayer != null && uses > 0)
             {
                 uses--;
                 ActivateRemote();
 
-                LocalPlayer.StartCoroutine(DelayedActivation( 1.5f, () =>
+                HoldingPlayer.StartCoroutine(DelayedActivation(1.5f, () =>
                 {
                     RemoteMalfunction();
                 }));
             }
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new System.NotImplementedException();
         }
@@ -108,11 +118,11 @@ namespace ItemsReworked.Scrap
 
                 if (BaseScrap.heldByPlayerOnServer)
                 {
-                    Vector3 bodyVelocity = (LocalPlayer.gameplayCamera.transform.position + BaseScrap.transform.position) / 2f;
+                    Vector3 bodyVelocity = (HoldingPlayer.gameplayCamera.transform.position + BaseScrap.transform.position) / 2f;
                     BaseScrap.playerHeldBy.KillPlayer(bodyVelocity, spawnBody: true, CauseOfDeath.Blast);
                     BaseScrap.DestroyObjectInHand(BaseScrap.playerHeldBy);
                     ItemsReworkedPlugin.Instance.scrapHandler.RemoveScrapItem(BaseScrap);
-                    ItemsReworkedPlugin.mls?.LogInfo($"Remote exploded in the hand of the LocalPlayer '{LocalPlayer.name}'");
+                    ItemsReworkedPlugin.mls?.LogInfo($"Remote exploded in the hand of the LocalPlayer '{HoldingPlayer.name}'");
                 }
 
                 BaseScrap.SetScrapValue(1);
@@ -122,9 +132,9 @@ namespace ItemsReworked.Scrap
             {
                 if (BaseScrap.heldByPlayerOnServer)
                 {
-                    AudioHandler.PlaySound(LocalPlayer, "Scrap\\Remote\\Zap.mp3");
+                    AudioHandler.PlaySound(HoldingPlayer, "Scrap\\Remote\\Zap.mp3");
                     BaseScrap.playerHeldBy.DamagePlayer(10, true, causeOfDeath: CauseOfDeath.Electrocution);
-                    ItemsReworkedPlugin.mls?.LogInfo($"Remote zapped LocalPlayer '{LocalPlayer.name}'");
+                    ItemsReworkedPlugin.mls?.LogInfo($"Remote zapped LocalPlayer '{HoldingPlayer.name}'");
                 }
 
                 uses = 0;

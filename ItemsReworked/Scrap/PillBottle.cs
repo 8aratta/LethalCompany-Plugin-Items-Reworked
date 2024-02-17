@@ -1,6 +1,6 @@
 ﻿#region usings
-using GameNetcodeStuff;
 using ItemsReworked.Handlers;
+using System;
 using System.Collections;
 using UnityEngine;
 #endregion
@@ -10,37 +10,52 @@ namespace ItemsReworked.Scrap
     internal class PillBottle : BaseScrapItem
     {
         private int remainingPills;
-        private int pillQuality;
+        private int pillMultiplier = -2;
 
         internal PillBottle(GrabbableObject pillBottle) : base(pillBottle)
         {
-            pillQuality = GetPillQuality();
+            ItemDescription = "Filled with a few pills";
+            pillMultiplier = GetPillQuality();
             remainingPills = CalculatePills(BaseScrap.scrapValue);
+        }
+
+        public override void UpdateItem()
+        {
+            pillMultiplier = GetPillQuality();
+            remainingPills = CalculatePills(BaseScrap.scrapValue);
+
+            if (ItemPropertiesDiscovered)
+            {
+                ItemName = ItemQuality + " " + ItemName;
+                ItemDescription += string.Empty + $"Looks like there are {remainingPills} pills left.";
+                
+                // Update Visible Scrap Name
+                BaseScrap.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText = ItemName;
+            }
+
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            if (BaseScrap.itemUsedUp)
-            {
-                HUDManager.Instance.DisplayTip("An empty pill bottle", "Seems like there are no pills left in this one...");
-            }
+            if (!BaseScrap.itemUsedUp)
+                HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
             else
-            {
-                HUDManager.Instance.DisplayTip("A pill bottle", "There are some pills in here...");
-            }
+                HUDManager.Instance.DisplayTip($"Empty {ItemName}", "Nothing in here...");
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && !BaseScrap.itemUsedUp && !inSecondaryMode && LocalPlayer.health != 100 && !LocalPlayer.inTerminalMenu)
+            if (HoldingPlayer != null && !BaseScrap.itemUsedUp && !InSpecialScenario && HoldingPlayer.health != 100 && !HoldingPlayer.inTerminalMenu)
             {
-                inSecondaryMode = true;
-                var soundName = "PillPop" + pillQuality + ".mp3";
-                AudioHandler.PlaySound(LocalPlayer, "Scrap\\PillBottle\\" + soundName);
+                InSpecialScenario = true;
+                var soundName = "PillPop" + pillMultiplier + ".mp3";
+                AudioHandler.PlaySound(HoldingPlayer, "Scrap\\PillBottle\\" + soundName);
                 ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
-                LocalPlayer.StartCoroutine(DelayedActivation(2f, () =>
+                HoldingPlayer.StartCoroutine(DelayedActivation(2f, () =>
                 {
-                    remainingPills = IngestPills( remainingPills);
+                    remainingPills = IngestPills(remainingPills);
                     BaseScrap.SetScrapValue(remainingPills);
                     if (remainingPills == 0)
                     {
@@ -51,18 +66,45 @@ namespace ItemsReworked.Scrap
             }
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new System.NotImplementedException();
         }
 
         private int GetPillQuality()
         {
-            System.Random random = new System.Random();
-            int pillQuality = random.Next(-1, 4);
-            if (pillQuality != 0)
-                return pillQuality;
-            else return 1;
+            // Initial pillMultiplier initialization
+            if (pillMultiplier == -2)
+            {
+                System.Random random = new System.Random();
+                pillMultiplier = random.Next(-1, 4);
+            }
+
+            switch (pillMultiplier)
+            {
+                default:
+                    ItemQuality = "Basic";
+                    if (ItemPropertiesDiscovered)
+                        ItemDescription = " Makes the pain go away.";
+                    return 1;
+                case -1:
+                    ItemQuality = "Bad";
+                    if (ItemPropertiesDiscovered)
+                        ItemDescription = " Probably not a good idea to take any...";
+                    break;
+                case 2:
+                    ItemQuality = "Great";
+                    if (ItemPropertiesDiscovered)
+                        ItemDescription = " These are pretty strong ones.";
+                    break;
+                case 3:
+                    ItemQuality = "Supreme";
+                    if (ItemPropertiesDiscovered)
+                        ItemDescription = " Big Pharma tried to keep these a secret!";
+                    break;
+            }
+
+            return pillMultiplier;
         }
 
         private int CalculatePills(int scrapValue)
@@ -93,18 +135,17 @@ namespace ItemsReworked.Scrap
             int surplus = 0;
 
             // Calculate healing ammount
-            int dose = pills * pillQuality;
+            int dose = pills * pillMultiplier;
 
-            if (LocalPlayer.health + dose > maxHealth)
+            if (HoldingPlayer.health + dose > maxHealth)
             {
-                //OVERDOSING -- FEATURE TO IMPLEMENT
-
-                surplus = LocalPlayer.health + dose - maxHealth / pillQuality;
-                LocalPlayer.StartCoroutine(GradualHealing( pills - surplus));
+                //TODO: OVERDOSING
+                surplus = HoldingPlayer.health + dose - maxHealth / pillMultiplier;
+                HoldingPlayer.StartCoroutine(GradualHealing(pills - surplus));
             }
             else
             {
-                LocalPlayer?.StartCoroutine(GradualHealing(pills));
+                HoldingPlayer?.StartCoroutine(GradualHealing(pills));
             }
 
             return surplus;
@@ -113,10 +154,10 @@ namespace ItemsReworked.Scrap
         private IEnumerator GradualHealing(int pills)
         {
             ItemsReworkedPlugin.mls?.LogInfo("CoroutineStarted");
-            int targetHealth = LocalPlayer.health + (pills * pillQuality);
+            int targetHealth = HoldingPlayer.health + (pills * pillMultiplier);
             // Time needed until targetHealth is reached
             float healingDuration;
-            switch (pillQuality)
+            switch (pillMultiplier)
             {
                 default:
                     healingDuration = pills * 10f;
@@ -129,7 +170,7 @@ namespace ItemsReworked.Scrap
                     break;
             }
 
-            // Interval in which the LocalPlayer is healed
+            // Interval in which the HoldingPlayer is healed
             float healingInterval = healingDuration / (float)pills;
 
             float elapsedTime = 0f;
@@ -141,10 +182,10 @@ namespace ItemsReworked.Scrap
                 if (elapsedIntervalTime > healingInterval)
                 {
                     // Apply healing
-                    LocalPlayer.health += pillQuality;
+                    HoldingPlayer.health += pillMultiplier;
 
                     // Update UI
-                    HUDManager.Instance.UpdateHealthUI(LocalPlayer.health, false);
+                    HUDManager.Instance.UpdateHealthUI(HoldingPlayer.health, false);
 
                     //Reset Healing interval
                     elapsedIntervalTime = 0f;
@@ -158,13 +199,13 @@ namespace ItemsReworked.Scrap
             }
 
             // Ensure final health value is correct
-            LocalPlayer.health = targetHealth;
+            HoldingPlayer.health = targetHealth;
 
             // Update UI one last time
-            HUDManager.Instance.UpdateHealthUI(LocalPlayer.health, false);
+            HUDManager.Instance.UpdateHealthUI(HoldingPlayer.health, false);
 
             // Reset Special Scenario
-            inSecondaryMode = false;
+            InSpecialScenario = false;
         }
     }
 }

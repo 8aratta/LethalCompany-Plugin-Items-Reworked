@@ -11,36 +11,41 @@ namespace ItemsReworked.Scrap
     {
         private bool isTurnedOn = false;
         private Dictionary<ForestGiantAI, Vector3> distractedGiants;
-        private ForestGiantAI distractedGiant;
+        private ForestGiantAI? distractedGiant;
 
         internal LaserPointer(GrabbableObject laserPointer) : base(laserPointer)
         {
+            ItemDescription = "Giants are easily distracted by its light.";
             distractedGiants = new Dictionary<ForestGiantAI, Vector3>();
-            distractedGiant = null;
-            hasSecondaryUse = false;
             isTurnedOn = false; //TODO: isactive base class
+        }
+
+        public override void UpdateItem()
+        {
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            HUDManager.Instance.DisplayTip("Laser Pointer", "Giants are easily distracted by its light");
+            HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && BaseScrap != null)
+            if (BaseScrap != null)
             {
                 if (BaseScrap.insertedBattery.charge > 0)
                     ToggleLaserPointerPower(!isTurnedOn);
 
                 if (isTurnedOn)
-                    LocalPlayer.StartCoroutine(EmitLaserRay());
+                    HoldingPlayer.StartCoroutine(EmitLaserRay());
             }
             else
-                ItemsReworkedPlugin.mls?.LogError($"Error during using of {BaseScrap.name}");
+                ItemsReworkedPlugin.mls?.LogError($"Error during using of {ItemName}");
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new NotImplementedException();
         }
@@ -98,7 +103,7 @@ namespace ItemsReworked.Scrap
         {
             foreach (var giant in forestGiants)
             {
-                // Ensure that laser is within ROV & giant is not in the middle of stun or eating of LocalPlayer animation
+                // Ensure that laser is within ROV & giant is not in the middle of stun or eating of HoldingPlayer animation
                 if (!giant.Key.inSpecialAnimation &&
                     Vector3.Distance(giant.Key.transform.position, laser.transform.position) < ItemsReworkedPlugin.GiantsRangeOfView.Value)
                 {

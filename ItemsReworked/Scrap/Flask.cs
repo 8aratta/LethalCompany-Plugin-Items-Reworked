@@ -22,6 +22,72 @@ namespace ItemsReworked.Scrap
 
         internal Flask(GrabbableObject flask) : base(flask)
         {
+            ItemName = "Mysterious Flask";
+            // Update Visible Scrap Name
+            BaseScrap.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText = ItemName;
+
+            ItemDescription = "Should I really risk drinking the content?";
+            RandomizeEffect();
+        }
+
+        public override void UpdateItem()
+        {
+            if (ItemPropertiesDiscovered)
+            {
+                // Update Visible Scrap Name
+                BaseScrap.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText = ItemName;
+            }
+
+            // Reset modified state
+            ItemModified = false;
+        }
+
+        public override void InspectItem()
+        {
+            if (!BaseScrap.itemUsedUp)
+            {
+                HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
+            }
+            else
+                HUDManager.Instance.DisplayTip($"{ItemName}", "... the taste, was not that great.");
+        }
+
+        public override void UseItem()
+        {
+            if (!BaseScrap.itemUsedUp)
+            {
+                BaseScrap.itemUsedUp = true;
+
+                HoldingPlayer.StartCoroutine(DelayedActivation(3f, () =>
+                    {
+                        switch (flaskEffect)
+                        {
+                            default:
+                            case "None":
+                                NoEffect();
+                                break;
+                            case "Intoxication":
+                                ApplyDrunkEffect(HoldingPlayer);
+                                break;
+                            case "Poisoning":
+                                HoldingPlayer.StartCoroutine(ApplyPoisonEffect(HoldingPlayer));
+                                break;
+                            case "Healing":
+                                HoldingPlayer.StartCoroutine(ApplyHealEffect(HoldingPlayer));
+                                break;
+                        }
+                    }));
+                BaseScrap.SetScrapValue(3);
+            }
+        }
+
+        public override void SecondaryUseItem()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void RandomizeEffect()
+        {
             int totalProbability = 0;
             int[] probabilities = new int[4];
 
@@ -40,10 +106,7 @@ namespace ItemsReworked.Scrap
 
             // If no effects are enabled, set NoEffect as default
             if (totalProbability == 0)
-            {
-                flaskEffect = "None";
                 return;
-            }
 
             // Generate a random number within the total probability space
             int randomNum = random.Next(totalProbability);
@@ -60,15 +123,23 @@ namespace ItemsReworked.Scrap
                     {
                         case 0:
                             flaskEffect = "NoEffect";
+                            ItemName = "Pointless Flask";
+                            ItemDescription = "It does nothing! Or does it...";
                             break;
                         case 1:
                             flaskEffect = "Intoxication";
+                            ItemName = "Flask of Intoxication";
+                            ItemDescription = "The flask oozes a sweet aroma... reminding you of certain beverages your father used to drink.";
                             break;
                         case 2:
                             flaskEffect = "Poisoning";
+                            ItemName = "Flask of Poisoning";
+                            ItemDescription = "Filled with a deadly toxin... Only the most depraved would dare to consume this.";
                             break;
                         case 3:
                             flaskEffect = "Healing";
+                            ItemName = "Flask of Healing";
+                            ItemDescription = "What a rare find!";
                             break;
                     }
                     break;
@@ -76,70 +147,38 @@ namespace ItemsReworked.Scrap
             }
         }
 
-        public override void InspectItem()
-        {
-            if (!BaseScrap.itemUsedUp)
-                HUDManager.Instance.DisplayTip("A random flask", "Should I really risk drinking the content?");
-            else
-                HUDManager.Instance.DisplayTip("A random flask", "... the taste, was not great.");
-        }
-
-        public override void UseItem()
-        {
-            if (LocalPlayer != null && !BaseScrap.itemUsedUp)
-            {
-                BaseScrap.itemUsedUp = true;
-
-                LocalPlayer.StartCoroutine(DelayedActivation(3f, () =>
-                    {
-                        switch (flaskEffect)
-                        {
-                            default:
-                            case "None":
-                                NoEffect();
-                                break;
-                            case "Intoxication":
-                                ApplyDrunkEffect(LocalPlayer);
-                                break;
-                            case "Poisoning":
-                                LocalPlayer.StartCoroutine(ApplyPoisonEffect(LocalPlayer));
-                                break;
-                            case "Healing":
-                                LocalPlayer.StartCoroutine(ApplyHealEffect(LocalPlayer));
-                                break;
-                        }
-                    }));
-                BaseScrap.SetScrapValue(3);
-            }
-        }
-
-        public override void SpecialUseItem()
-        {
-            throw new System.NotImplementedException();
-        }
-
         private void NoEffect()
         {
-            HUDManager.Instance.DisplayTip("Nothing", "Nothing happened...");
+            if (ItemPropertiesDiscovered)
+                HUDManager.Instance.DisplayTip("Nothing", "Well now we are certain that it does nothing...");
+            else
+                HUDManager.Instance.DisplayTip("Nothing", "Nothing happened...");
         }
 
         private void ApplyDrunkEffect(PlayerControllerB player)
         {
-            // Make the LocalPlayer drunk
+            if (ItemPropertiesDiscovered)
+                HUDManager.Instance.DisplayTip("Intoxication", "Don't drink and drive!");
+            else
+                HUDManager.Instance.DisplayTip("Intoxication", "You feel a bit dizzy.");
+
+            // Make the HoldingPlayer drunk
             AudioHandler.PlaySound(player, "Scrap\\Flask\\Intoxication.mp3");
             player.drunkness = 1f;
-            HUDManager.Instance.DisplayTip("Intoxication", "You feel a bit dizzy.");
         }
 
         private IEnumerator ApplyPoisonEffect(PlayerControllerB player)
         {
-            HUDManager.Instance.DisplayTip("Poisoning Effect", "You feel a burning sensation.");
+            if (ItemPropertiesDiscovered)
+                HUDManager.Instance.DisplayTip("You've been poisoned", "I don't know what you expected to happen...", true);
+            else
+                HUDManager.Instance.DisplayTip("Poisoning Effect", "Well..");
 
             float elapsedTime = 0f;
 
             while (player.health > ItemsReworkedPlugin.MaxPoison.Value)
             {
-                // Decrement LocalPlayer's health gradually
+                // Decrement HoldingPlayer's health gradually
                 elapsedTime += Time.deltaTime;
                 if (elapsedTime >= 3f) // Adjust the duration as needed
                 {
@@ -154,10 +193,12 @@ namespace ItemsReworked.Scrap
             }
         }
 
-
         private IEnumerator ApplyHealEffect(PlayerControllerB player)
         {
-            HUDManager.Instance.DisplayTip("Healing Effect", "You feel rejuvenated.");
+            if (ItemPropertiesDiscovered)
+                HUDManager.Instance.DisplayTip("Healing", "You feel rejuvenated... this is starting to feel like a some kind of JRPG...");
+            else
+                HUDManager.Instance.DisplayTip("Healing", "You are being healed.");
 
             const int minScrapValue = 16;
             const int maxScrapValue = 44;
@@ -181,7 +222,7 @@ namespace ItemsReworked.Scrap
 
             while (player.health < targetHealth && player.health < 100)
             {
-                // Increment LocalPlayer's health gradually
+                // Increment HoldingPlayer's health gradually
                 elapsedTime += Time.deltaTime;
                 if (elapsedTime >= 3f)
                 {

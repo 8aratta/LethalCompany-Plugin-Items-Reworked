@@ -9,26 +9,34 @@ namespace ItemsReworked.Scrap
         // Give to little girl to make her disappear
         internal Candy(GrabbableObject candy): base(candy)
         {
-
+            ItemDescription = "A sweet little treat!";
+        }
+        public override void UpdateItem()
+        {
+            if (ItemPropertiesDiscovered)
+                ItemDescription += string.Empty + $"Give it to the little girl if you're being haunted.";
+            
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            throw new System.NotImplementedException();
+            HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}");
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new System.NotImplementedException();
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && !BaseScrap.itemUsedUp && LocalPlayer.insanityLevel > 1f)
+            if (!BaseScrap.itemUsedUp && HoldingPlayer.insanityLevel > 1f)
             {
-                LocalPlayer.insanityLevel = 0f;
+                HoldingPlayer.insanityLevel = 0f;
                 BaseScrap.itemUsedUp = true;
-                LocalPlayer.currentlyHeldObject.DiscardItemOnClient();
+                BaseScrap.DiscardItemOnClient();
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿#region usings
-using GameNetcodeStuff;
 using ItemsReworked.Handlers;
 using System.Collections;
 using UnityEngine;
@@ -11,40 +10,47 @@ namespace ItemsReworked.Scrap
     {
         float effectDuration;
 
-        internal RedSodaCan(GrabbableObject redSodaCan):base(redSodaCan)
+        internal RedSodaCan(GrabbableObject redSodaCan) : base(redSodaCan)
         {
+            ItemDescription = "BokeCola – Elevate your jump game";
             effectDuration = CalculateEffectDuration(redSodaCan.scrapValue);
+        }
+
+        public override void UpdateItem()
+        {
+            if (ItemPropertiesDiscovered)
+                ItemDescription += $" for {effectDuration} seconds!";
+
+            // Reset modified state
+            ItemModified = false;
         }
 
         public override void InspectItem()
         {
-            effectDuration = CalculateEffectDuration(BaseScrap.scrapValue);
-            ItemsReworkedPlugin.mls?.LogInfo($"Effect duration: {effectDuration}");
-
             if (!BaseScrap.itemUsedUp)
-                HUDManager.Instance.DisplayTip("Some kind of energy drink", "What did they say in those advertisements when I was younger... something about a red bull... and wings? I dunno...");
+                HUDManager.Instance.DisplayTip($"{ItemName}", $"{ItemDescription}!");
             else
-                HUDManager.Instance.DisplayTip("An empty energy drink", "Wow... the ads were not lying");
+                HUDManager.Instance.DisplayTip($"Empty {ItemName}", "Wow... the ads were not lying");
 
         }
 
-        public override void SpecialUseItem()
+        public override void SecondaryUseItem()
         {
             throw new System.NotImplementedException();
         }
 
         public override void UseItem()
         {
-            if (LocalPlayer != null && !BaseScrap.itemUsedUp)
+            if (HoldingPlayer != null && !BaseScrap.itemUsedUp)
             {
                 BaseScrap.itemUsedUp = true;
                 System.Random random = new System.Random();
                 var soundName = "Soda" + random.Next(1, 3) + ".mp3";
-                AudioHandler.PlaySound(LocalPlayer, "Scrap\\RedSodaCan\\" + soundName);
+                AudioHandler.PlaySound(HoldingPlayer, "Scrap\\RedSodaCan\\" + soundName);
                 ItemsReworkedPlugin.mls?.LogInfo($"playing: {soundName}");
-                LocalPlayer.StartCoroutine(DelayedActivation(3f, () =>
+                HoldingPlayer.StartCoroutine(DelayedActivation(3f, () =>
                 {
-                    LocalPlayer.StartCoroutine(Energize());
+                    HoldingPlayer.StartCoroutine(Energize());
                     BaseScrap.SetScrapValue(BaseScrap.scrapValue / 2);
                 }));
             }
@@ -69,18 +75,18 @@ namespace ItemsReworked.Scrap
         private IEnumerator Energize()
         {
             float elapsedTime = 0f;
-            float originalForce = LocalPlayer.jumpForce;
+            float originalForce = HoldingPlayer.jumpForce;
 
             while (elapsedTime < effectDuration)
             {
-                LocalPlayer.jumpForce = originalForce * 1.5f;
+                HoldingPlayer.jumpForce = originalForce * 1.5f;
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
 
             ItemsReworkedPlugin.mls?.LogInfo($"Effect worn off");
             ItemsReworkedPlugin.mls?.LogInfo($"Original force: {originalForce}");
-            LocalPlayer.jumpForce = originalForce;
+            HoldingPlayer.jumpForce = originalForce;
         }
     }
 }
